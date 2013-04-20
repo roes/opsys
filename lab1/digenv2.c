@@ -94,7 +94,7 @@ int main(int argc, char** argv){
     }
     childpid = fork();
     if(0 == childpid){                /* Execute child process. Doesn't return from this */
-      child(programs[i],(i==0)?-1:i-1,(i==num_programs-1)?-1:i); /* send -1 if read/write from stdin/stdout */
+      child(programs[i],(i==0)?-1:i-1,(i==num_programs-1)?-1:i); /* send -1 if no pipe */
     }
     check(childpid, "Cannot fork()");
     if (i > 0){                       /* Close pipe in parent, except after first child */
