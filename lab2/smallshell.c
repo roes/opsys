@@ -5,6 +5,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,18 +57,38 @@ int main(int argc, char *argv[]){
      */
 
     else if(strcmp(cmd_argv[0],"cd") == 0){
-      if (cmd_argv[1] != '\0'){         /* If a path is supplied, change to it */
+      if(cmd_argv[1] != '\0'){          /* If a path is supplied, change to it */
         return_value = chdir(cmd_argv[1]);
       }
-      if (cmd_argv[1] == '\0' ||        /* If no argument or change failed */
-          return_value == -1){          /* change to home */
+      if(cmd_argv[1] == '\0' ||         /* If no argument or change failed */
+         return_value == -1){           /* change to home */
         return_value = chdir(home);
-        if (return_value == -1) fprintf(stderr, "Could not cd to HOME");
+        if(return_value == -1) fprintf(stderr, "Could not cd to HOME");
       }
       getcwd(current_wd, MAX_PATH_LENGTH);
     }
 
 
+    /*
+     * Start new process running supplied command.
+     */
+
+    else {
+      int status;
+      pid_t childpid, return_pid;
+      childpid = fork();
+      if(childpid < 0){ perror("Cannot fork()"); exit(1); }
+      else if(childpid == 0){
+        (void) execvp(cmd_argv[0], cmd_argv);
+        perror("Cannot exec");
+        exit(1);
+      }
+      if(mode == FOREGROUND){
+        do {
+          return_pid = wait(&status);
+        } while(return_pid != childpid);
+      }
+    }
   }
 }
 
@@ -80,7 +101,7 @@ void parse_command(char *cmd_string, char *cmd_argv[], int *mode){
                                            argument array */
     while(*p != ' ' && *p != '\0' &&
           *p != '\n'){                  /* Loops past all chars in current word */
-      if(*p == '&') *mode = BACKGROUND;
+      if(*p == '&') { *mode = BACKGROUND; *p = '\0'; }
       p++;
     }
     while(*p == ' ' || *p == '\n'){     /* Loops past all word separators and
