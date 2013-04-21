@@ -48,6 +48,7 @@ int main(int argc, char *argv[]){
 
 
     if(cmd_argv[0] == '\0') continue;   /* No command read, continue */
+    else if(strcmp(cmd_argv[0],"exit") == 0) exit(0);
 
 
     /*
