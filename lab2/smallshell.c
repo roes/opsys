@@ -87,6 +87,10 @@ int main(int argc, char *argv[]){
         do {
           return_pid = wait(&status);
         } while(return_pid != childpid);
+      } else {
+        do {
+          return_pid = waitpid(-1, &status, WNOHANG);
+        } while(return_pid != 0);
       }
     }
   }
