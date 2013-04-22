@@ -13,8 +13,8 @@
  * OPTIONS:
  *    parameter_list    List of parameters to grep. See man grep for full list.
  *
- * COMPILATION
- *	  gcc -Wall -o digenv digenv.c
+ * COMPILATION:
+ *    gcc -Wall -o digenv digenv.c
  *
  * EXAMPLES:
  *    digenv -i "path"
@@ -183,7 +183,7 @@ void child(char* program, int in_pipe, int out_pipe){
   else {
     (void) execlp(program, program, (char *) 0);  /* Only returns if failed */
     if (strcmp(program, "less") == 0) 
-      (void) execlp("more", "more", (char *) 0);  /* if less failed then try with more */
+      (void) execlp("more", "more", (char *) 0);  /* If less failed then try more */
   }
   check(-1,strcat(program," cannot exec"));       /* Failed, print error and exit(1) */
 }
