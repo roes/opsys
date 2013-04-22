@@ -15,20 +15,23 @@
 
 \section*{Problembeskrivning}
 Att skaffa sig kunskap om hur system-anrop fungerar i c, hur man skapar nya processer och kommunicerar dem emellan med hjälp av pipes.
-Mer specifikt att skriva ett program som har motsvarande beteende som terminalanropet: \texttt{printenv [| grep parameterlista] | sort | less}
+Mer specifikt att skriva ett program som har motsvarande beteende som terminalanropet: \texttt{printenv [| grep parameterlista] | sort | PAGER}
+\\
+\texttt{PAGER} är värdet på miljövariabeln med samma namn, om den inte är satt så används less. Om less inte hittas så används more.
 
 \section*{Programbeskrivning}
 Vi har valt att lösa uppgiften genom iterativ programmering, vi valde detta då det är enklare att förstå och lättare att få rätt gentemot en rekursiv lösning.
+\\
 Main består av 3 block.
 \\
-Först deklareras och initieras, om möjligt, de variabler som kommer användas.
+Först deklareras och initieras, om möjligt, de variabler som kommer användas. Bland annat den array som innehåller namn på de program som kommer köras.
 \\
-Sedan skapas pipes och startas barn-processer i en for-loop. Varje nystartad barn-process kommer kalla på \texttt{child()}.
+Sedan skapas pipes och startas barn-processer i en for-loop. Varje nystartad barn-process kommer kalla på \texttt{child}. Föräldra-processen stänger oanvända fildeskriptorer efter att barn-processen skapats.
 \\
 I sista blocket väntar föräldra-processen i en for-loop på att barnen skall bli färdiga och skriver vid fel ut eventuella returvärden.
 \\
 \\
-\texttt{child()} tar emot 3 parametrar, namn på filen som skall köras, index till eventuell pipe som skall användas istället för stdin och index till eventuell pipe som skall användas istället för stdout. \texttt{Child} sätter upp så att eventuella pipes används istället för stdin/stdout och kör sedan \texttt{exec}. Denna metod kommer inte att returnera.
+\texttt{child} tar emot 3 parametrar: namn på filen som skall köras, index till eventuell pipe som skall användas istället för stdin och index till eventuell pipe som skall användas istället för stdout. \texttt{Child} sätter upp så att eventuella pipes används istället för stdin/stdout och kör sedan \texttt{exec}. Denna metod kommer inte att returnera.
 \\
 Vi valde att implementera uppgiften på detta sätt då for-loopen ihop med filnamnsparametern minimerar kod-duplicering.
 
@@ -36,14 +39,14 @@ Vi valde att implementera uppgiften på detta sätt då for-loopen ihop med filn
 \subsubsection*{1. Vad heter processen med PID=1?}
 Den heter init.
 
-\subsubsection*{2. Kan environmentvariabler användas för kommunikation?}
-Ja. Varje process har sin egen uppsättning av environmentvariabler som ärvs från föräldrapocessen. Alltså kan en föräldraprocess kommunicera en gång med sitt barn genom att ändra en eller fler environmentvariabler innan fork. Efter fork kan de inte längre kommunicera genom environmentvariablerna eftersom ändringar bara påverkar deras egna variabler.
+\subsubsection*{2. Kan miljövariabler användas för kommunikation?}
+Ja. Varje process har sin egen uppsättning av miljövariabler som ärvs från föräldra-processen. Alltså kan en föräldra-process kommunicera en gång med sitt barn genom att ändra en eller fler miljövariabler innan fork. Efter fork kan de inte längre kommunicera genom miljövariablerna eftersom ändringar bara påverkar deras egna variabler.
 
 \subsubsection*{3. Vad händer när man försöker ändra beteende för \texttt{SIGKILL}?}
 \texttt{SIGKILL} och \texttt{SIGSTOP} är inte giltiga argument till \texttt{sigaction}, försöker man ändra dem så returneras ett error \texttt{EINVAL} och beteendet för signalen ändras ej.
 
 \subsubsection*{4. Varför returnerar \texttt{fork} 0 till barnet och barn-PID till föräldern?}
-Detta görs för att parent-processen skall kunna hålla koll på sina barn-processer och t.ex. avsluta dem vid behov.
+Detta görs för att föräldra-processen skall kunna hålla koll på sina barn-processer och t.ex. avsluta dem vid behov.
 En barn-process kan ta reda på sitt eget PID genom \texttt{getpid}. Den kan även hitta förälderns PID genom \texttt{getppid}.
 
 \subsubsection*{5. Varför behöver man både File Table och File Descriptor Table?}
@@ -55,9 +58,19 @@ En process som läser från en pipe läser tills EOF (End Of File) kommer. Vilke
 Barn-processerna har inget sätt att direkt märka om andra processer dör, däremot så får föräldra-processen när den anropar \texttt{wait} tillbaka status för barnet som avslutat. Från denna status kan man utläsa om barn-processen slutade naturligt eller pga något fel eller signal. I detta skede kan man använda föräldra-processen för att skicka signaler till de andra barn-processerna.
 
 \subsubsection*{8. Hur kan ditt program ta reda på om \texttt{grep} misslyckades?}
-\texttt{Grep} returnerar 1 om den inte hittar någon matching och 2 om parametrarna är felaktiga. Föräldraprocessen kan kontollera grep-processens returnvärde genom att vänta på grep-processen tills den kört klart och sedan hämta dess returvärde med macrot \texttt{WEXITSTATUS}.
+\texttt{Grep} returnerar 1 om den inte hittar någon matching och 2 om parametrarna är felaktiga. Föräldra-processen kan kontollera grep-processens returnvärde genom att vänta på grep-processen tills den kört klart och sedan hämta dess returvärde med macrot \texttt{WEXITSTATUS}.
 
 \section*{Filkatalog}
+Alla filer som är associerade med denna lab går att finna i:
+\texttt{frhi@shell.it.kth.se:/Kurser/OS/lab1/}
+\\
+Filer:
+\begin{description}
+\item[digenv.c] källkoden
+\item[Makefile] makefil för att bygga programmet
+\item[lab1-rapport.pdf] denna rapport i pdf-format
+\item[exampleRuns.txt] exempel på körningar av programmet
+\end{description}
 
 \section*{Utskrift med kompileringskommandon}
 \lstinputlisting[basicstyle=\footnotesize, breaklines]{commands.txt}
@@ -68,7 +81,7 @@ Barn-processerna har inget sätt att direkt märka om andra processer dör, där
 \section*{Verksamhetsberättelse och synpunkter}
 Pdf:en ‘Användbara systemanrop’ var väldigt välskriven och ett utmärkt stöd för att utföra laborationen. Även laborationsspecifikationen var tydlig och enkel att följa. Stötte inte på några direkta problem, utöver ovana att arbeta i c men det kommer man ganska snabbt tillbaka in i.
 \\
-Tidsestimering: 
+Tidsestimering: Det mesta av tiden gick inte till att göra själva implementationen, utan till att läsa materialet, skriva dokumentation och kommentarer, testa och att skriva rapporten. Vår estimering är ca 8h per person för allt sammantaget.
 
 \end{document}
 
