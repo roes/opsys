@@ -28,7 +28,7 @@ Main består av 3 block.
 \\
 Först deklareras och initieras, om möjligt, de variabler som kommer användas. Bland annat den array som innehåller namn på de program som kommer köras.
 \\
-Sedan skapas pipes och startas barn-processer i en for-loop. Varje nystartad barn-process kommer kalla på \texttt{child}. Föräldra-processen stänger oanvända fildeskriptorer efter att barn-processen skapats.
+Sedan körs en for-loop där pipes skapas och barn-processer startas. Varje nystartad barn-process kommer kalla på \texttt{child}. Föräldra-processen stänger oanvända fildeskriptorer efter att barn-processen skapats.
 \\
 I sista blocket väntar föräldra-processen i en for-loop på att barnen skall bli färdiga och skriver vid fel ut eventuella returvärden.
 \\
@@ -55,7 +55,7 @@ En barn-process kan ta reda på sitt eget PID genom \texttt{getpid}. Den kan äv
 Processer kan ha sina egna läs/skriv-markeringar, vilket är default när en fil öppnas, men processer kan även dela på dessa markeringar. Delning sker när en barn-process skapas genom fork. Läs/skriv-markeringarna måste därför lagras i en speciell tabell som är gemensam för alla processer, alltså behövs även FDT.
 
 \subsubsection*{6. Vad händer om man inte stänger en oanvänd pipe?}
-En process som läser från en pipe läser tills EOF (End Of File) kommer. Vilket är när alla processer som har tillgång till pipen har stängt skrivsidan. Resultatet blir att programmet hänger sig om någon oanvänd skrivsida inte har stängts. Motsvarande händer för skrivare om pipen blir fylld. Då väntar skrivprocessen på att läsaren ska tömma pipen om någon har en lässida till pipen öppen.
+En process som läser från en pipe läser tills EOF (End Of File) kommer. Vilket är när alla processer som har tillgång till pipen har stängt skrivsidan. Resultatet blir att programmet hänger sig om någon oanvänd skrivsida inte har stängts.
 
 \subsubsection*{7. Vad händer om en av processerna dör?}
 Barn-processerna har inget sätt att direkt märka om andra processer dör, däremot så får föräldra-processen när den anropar \texttt{wait} tillbaka status för barnet som avslutat. Från denna status kan man utläsa om barn-processen slutade naturligt eller pga något fel eller signal. I detta skede kan man använda föräldra-processen för att skicka signaler till de andra barn-processerna.
@@ -66,6 +66,7 @@ Barn-processerna har inget sätt att direkt märka om andra processer dör, där
 \section*{Filkatalog}
 Alla filer som är associerade med denna lab går att finna i:
 \texttt{frhi@shell.it.kth.se:/Kurser/OS/lab1/}
+Användaren rron har getts de nödvändiga rättigheterna.
 \\
 Filer:
 \begin{description}
