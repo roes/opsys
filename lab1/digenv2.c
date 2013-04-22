@@ -6,11 +6,15 @@
  * DESCRIPTION:
  *    digenv displays the system environment variables sorted using
  *    the pager defined in PAGER or using less if PAGER is not defined.
+ *	  If less cannot be executed then more is used.
  *    If a parameter list is supplied, only the environment variables
  *    returned by 'grep parameter_list' are displayed.
  *
  * OPTIONS:
  *    parameter_list    List of parameters to grep. See man grep for full list.
+ *
+ * COMPILATION
+ *	  gcc -Wall -o digenv digenv.c
  *
  * EXAMPLES:
  *    digenv -i "path"
@@ -178,6 +182,8 @@ void child(char* program, int in_pipe, int out_pipe){
   }
   else {
     (void) execlp(program, program, (char *) 0);  /* Only returns if failed */
+    if (strcmp(program, "less") == 0) 
+      (void) execlp("more", "more", (char *) 0);  /* if less failed then try with more */
   }
   check(-1,strcat(program," cannot exec"));       /* Failed, print error and exit(1) */
 }
