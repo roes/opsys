@@ -5,12 +5,14 @@
 \usepackage[utf8]{inputenc}
 \usepackage{courier}
 \usepackage{listings}
+\usepackage{pdfpages}
 
 \title{Digenv - processkommunikation med pipes}
 \date{ID2200 - Laboration 1}
 \author{Cecilia Roes \\ Fredrik Hillnertz}
 
 \begin{document}
+\includepdf{pre_lab1.pdf}
 \maketitle
 
 \section*{Problembeskrivning}
@@ -50,6 +52,7 @@ Detta görs för att föräldra-processen skall kunna hålla koll på sina barn-
 En barn-process kan ta reda på sitt eget PID genom \texttt{getpid}. Den kan även hitta förälderns PID genom \texttt{getppid}.
 
 \subsubsection*{5. Varför behöver man både File Table och File Descriptor Table?}
+Processer kan ha sina egna läs/skriv-markeringar, vilket är default när en fil öppnas, men processer kan även dela på dessa markeringar. Delning sker när en barn-process skapas genom fork. Läs/skriv-markeringarna måste därför lagras i en speciell tabell som är gemensam för alla processer, alltså behövs även FDT.
 
 \subsubsection*{6. Vad händer om man inte stänger en oanvänd pipe?}
 En process som läser från en pipe läser tills EOF (End Of File) kommer. Vilket är när alla processer som har tillgång till pipen har stängt skrivsidan. Resultatet blir att programmet hänger sig om någon oanvänd skrivsida inte har stängts. Motsvarande händer för skrivare om pipen blir fylld. Då väntar skrivprocessen på att läsaren ska tömma pipen om någon har en lässida till pipen öppen.

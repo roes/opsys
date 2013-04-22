@@ -1,5 +1,4 @@
-Script started on Sat 20 Apr 2013 02:29:34 PM CEST
-cecilia@Odin:~/Code/opsys/lab1$ gcc -Wall -o digenv digenv2.c
+cecilia@Odin:~/Code/opsys/lab1$ gcc -Wall -o digenv digenv.c
 cecilia@Odin:~/Code/opsys/lab1$ ./digenv -i "PATH"
 DEFAULTS_PATH=/usr/share/gconf/ubuntu.default.path
 GEM_PATH=/home/cecilia/.rvm/gems/ruby-1.9.3-p374:/home/cecilia/.rvm/gems/ruby-1.9.3-p374@global
@@ -17,7 +16,3 @@ Try `grep --help' for more information.
 Child (pid 23674) failed with exit code 2
 cecilia@Odin:~/Code/opsys/lab1$ ./digenv "abcdefghi"
 Child (pid 23680) failed with exit code 1
-cecilia@Odin:~/Code/opsys/lab1$ exit
-exit
-
-Script done on Sat 20 Apr 2013 02:31:30 PM CEST
