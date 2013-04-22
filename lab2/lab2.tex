@@ -1,0 +1,75 @@
+\documentclass[a4paper]{article}
+
+\usepackage[swedish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{courier}
+\usepackage{listings}
+\usepackage{pdfpages}
+
+\title{Small-Shell för UNIX}
+\date{ID2200 - Laboration 2}
+\author{Cecilia Roes \\ Fredrik Hillnertz}
+
+\begin{document}
+\includepdf{pre_lab2.pdf}
+\maketitle
+
+\section*{Problembeskrivning}
+
+\section*{Programbeskrivning}
+
+\subsection*{Förberedelsefrågor}
+\subsubsection*{1. Motivera varför det ofta är bra att exekvera kommandon i en separat process}
+Genom att skapa nya processer att exekvera kommandon i kan systemet göra flera saker parallellt. Man kan även låta föräldra-processen hantera eventuella signaler/returvärden från barn-processerna på önskat sätt, t.ex. undvika att avbryta hela programmet bara för att ett kommando misslyckats.
+
+\subsubsection*{2. Vad händer om man inte i kommandotolken exekverar \texttt{wait} för en barn-process som avslutas?}
+All barn-processens information ligger kvar i processtabellen, man lämnar kvar en så kallad zombie-process.
+
+\subsubsection*{3. Hur skall man utläsa \texttt{SIGSEGV}?}
+\texttt{SIGSEGV} är invalid memory reference, som segfault eller bus error. Man försöker alltså komma åt en plats i minnet man inte har tillgång till.
+
+\subsubsection*{4. Varför kan man inte blockera \texttt{SIGKILL}?}
+För att man alltid skall kunna tvinga processer att avsluta vid behov. Om man försöker blockera \texttt{SIGKILL} så kommer det tyst ignoreras.
+
+\subsubsection*{5. Hur skall man utläsa deklarationen \texttt{void (*disp) (int)}?}
+Det är en funktionspekare till en funktion som tar en \texttt{int} som parameter och returnerar \texttt{void}. Funktionspekare används för att skicka en funktion som parameter till en annan funktion.
+
+\subsubsection*{6. Vilket systemanrop använder \texttt{sigset(3c)} troligtvis för att installera en signalhanterare?}
+\texttt{sigaction(2)}
+
+\subsubsection*{7. Hur gör man för att din kommandotolk inte skall termineras då en förgrundprocess i den termineras med \texttt{<Ctrl-c>}?}
+
+
+\subsubsection*{8. Varför har man inte bytt `working directory' till \texttt{/home/ds/robertr} när man avslutat miniShell:et?}
+Processen skapar sin egen kopia av miljövariablerna. När man i miniShell:et byter working directory (wd) ändras bara processens egna wd, så när man stänger processen (miniShell:et) är man åter i samma directory som innan körningen.
+
+\section*{Filkatalog}
+Alla filer som är associerade med denna lab går att finna i:\\
+\texttt{frhi@shell.it.kth.se:/Kurser/OS/lab2/}
+\\
+Filer:
+\begin{description}
+\item[smallshell.c] källkoden
+%\item[Makefile] makefil för att bygga programmet
+\item[lab2-rapport.pdf] denna rapport i pdf-format
+\item[exampleRuns.txt] exempel på körningar av programmet
+\end{description}
+
+\section*{Utskrift med kompileringskommandon}
+%\lstinputlisting[basicstyle=\footnotesize, breaklines]{commands.txt}
+
+\section*{Källkod}
+\lstinputlisting[language=C, xleftmargin=-1in, basicstyle=\footnotesize]{smallshell.c}
+
+\section*{Verksamhetsberättelse och synpunkter}
+Även denna gång var laborationens manual välskriven, lätt att följa och full av tips. Det kändes dock som att den var skriven som om detta var första laborationen, eller att man i alla fall inte hade gjort årets laboration 1 innan denna.
+
+En sak som orsakade lite problem var att det i \texttt{man 2 gettimeofday} (på Ubuntu) står ``POSIX.3-2008 marks gettimeofday() as obsolete, recommending the use of clock\_gettime(2) instead.'', men det ville inte kompilera om man använde \texttt{clock\_gettime}. Så någon kommentar om detta vore kanske bra.
+
+Det vore även bra om det gjordes tydligare vad skillnaderna mellan laborationen för ID2200 och ID2206 är. Det står endast i en mindre parantes i början av instruktionen att signalhanterare inte är krav för ID2200, detta är väldigt lätt att missa.
+\\
+Tidsåtgång: Precis som förra gången tog arbetet utöver själva implementationen en betydande del av tiden. Inkluderat att läsa materialet (man sidorna mm), skriva dokumentation, testa och färdigställa rapporten tog laborationen ca 8h per person.
+
+\end{document}
+
