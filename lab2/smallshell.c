@@ -1,7 +1,23 @@
 /*
+ * NAME:
+ *   smallshell  -  a small shell that runs basic commands
  *
+ * SYNTAX:
+ *   smallshell
  *
+ * DESCRIPTION:
+ *   Smallshell is a small shell. It supports running commands in
+ *   the foreground or background (using &). It supports commands
+ *   found in the directories listed in PATH. Built-in commands are
+ *   cd [path] and exit.
  *
+ * ENVIRONMENT:
+ *   PATH, HOME
+ *
+ * NOTES:
+ *   |, <, > and ; are not supported.
+ *   A command can be up to 70 characters and have a maximum
+ *   of 5 parameters.
  */
 
 #include <sys/time.h>
@@ -13,7 +29,7 @@
 #include <unistd.h>
 
 #define MAX_COMMAND_SIZE 80
-#define MAX_NB_ARGUMENTS 6
+#define MAX_NB_ARGUMENTS 7
 #define MAX_PATH_LENGTH 100
 #define FOREGROUND 0
 #define BACKGROUND 1
@@ -21,6 +37,9 @@
 
 /* parse_command
  *
+ * parse_command parses commandline input and stores
+ * it in the given argument array. Also sets mode to
+ * FOREGROUND or BACKGROUND.
  */
 void parse_command(char *cmd_string,    /* IN: Commandline input string */
                    char *cmd_argv[],    /* OUT: Array of arguments */
@@ -29,21 +48,22 @@ void parse_command(char *cmd_string,    /* IN: Commandline input string */
 
 /* time_passed
  *
+ * time_passed returns the time passed from start to end.
  */
-struct timeval time_passed(struct timeval start,
-                           struct timeval end);
+struct timeval time_passed(struct timeval start, /* Start time */
+                           struct timeval end);  /* End time */
 
 
 int main(int argc, char *argv[]){
-  char cmd_string[MAX_COMMAND_SIZE];
-  char *cmd_argv[MAX_NB_ARGUMENTS];
-  int mode;
-  char *home = getenv("HOME");
-  char current_wd[MAX_PATH_LENGTH];
+  char cmd_string[MAX_COMMAND_SIZE];    /* Current commandline entry */
+  char *cmd_argv[MAX_NB_ARGUMENTS];     /* Arguments to exec */
+  int mode;                             /* fg or bg process */
+  char *home = getenv("HOME");          /* Home directory path */
+  char current_wd[MAX_PATH_LENGTH];     /* Current working directory */
   getcwd(current_wd, MAX_PATH_LENGTH);
 
   while(1){
-    int return_value;
+    int return_value;                   /* Return value from system calls */
 
 
     /*
@@ -71,7 +91,7 @@ int main(int argc, char *argv[]){
       if(cmd_argv[1] == '\0' ||         /* If no argument or change failed */
          return_value == -1){           /* change to home */
         return_value = chdir(home);
-        if(return_value == -1) fprintf(stderr, "Could not cd to HOME");
+        if(return_value == -1){ perror("Could not cd to HOME"); exit(1); }
       }
       getcwd(current_wd, MAX_PATH_LENGTH);
     }
@@ -82,42 +102,72 @@ int main(int argc, char *argv[]){
      */
 
     else {
-      int status;
-      struct timeval start, end, diff;
-      pid_t childpid, return_pid;
-      if(mode == FOREGROUND){
-        return_value = gettimeofday(&start, NULL);
-        if(return_value == -1){ perror("Couldn't get time"); exit(1); }
-      }
+      pid_t childpid;                   /* Holds pid returned from fork() */
       childpid = fork();
       if(childpid < 0){ perror("Cannot fork()"); exit(1); }
+
+
+      /*
+       * Child process
+       */
+
       else if(childpid == 0){
         (void) execvp(cmd_argv[0], cmd_argv);
         perror("Cannot exec");
         exit(1);
       }
-      fprintf(stdout, "Spawned %s process pid: %d\n",
-              (mode == FOREGROUND)?"foreground":"background", childpid);
-      if(mode == FOREGROUND){
-        do {
-          return_pid = wait(&status);
-          if(return_pid == -1){ perror("Wait failed"); exit(1); }
-          fprintf(stdout, "%s process %d terminated\n",
-                  (return_pid == childpid)?"Foreground":"Background", return_pid);
-        } while(return_pid != childpid);
-        return_value = gettimeofday(&end, NULL);
-        if(return_value == -1){ perror("Couldn't get time"); exit(1); }
-        diff = time_passed(start, end);
-        fprintf(stdout, "process took: %d:%.6d s\n",
-                (int)diff.tv_sec, (int)diff.tv_usec);
-      } else {
-        do {
-          return_pid = waitpid(-1, &status, WNOHANG);
-          if(return_pid == -1){ perror("Wait failed"); exit(1); }
-          if(return_pid != 0){
-            fprintf(stdout, "Background process %d terminated\n", return_pid);
-          }
-        } while(return_pid != 0);
+
+
+      /*
+       * Parent process
+       */
+      else {
+        int status;                     /* Holds status returned from wait() */
+        pid_t return_pid;               /* Holds pid returned from wait() */
+        struct timeval start, end, diff;/* Holds start, end and run time */
+        fprintf(stdout, "Spawned %s process pid: %d\n",
+            (mode == FOREGROUND)?"foreground":"background", childpid);
+
+
+        /*
+         * Running a foreground process.
+         * Timing and waiting for the process to finish.
+         */
+
+        if(mode == FOREGROUND){
+          return_value = gettimeofday(&start, NULL);
+          if(return_value == -1){ perror("Couldn't get time"); exit(1); }
+          do {                          /* Wait for processes to finish until
+                                           current foreground process is done */
+            return_pid = wait(&status);
+            if(return_pid == -1){ perror("Wait failed"); exit(1); }
+            fprintf(stdout, "%s process %d terminated\n",
+                    (return_pid == childpid)?"Foreground":"Background",
+                    return_pid);
+          } while(return_pid != childpid);
+          return_value = gettimeofday(&end, NULL);
+          if(return_value == -1){ perror("Couldn't get time"); exit(1); }
+          diff = time_passed(start, end);
+          fprintf(stdout, "process took: %d:%.6d s\n",
+                  (int)diff.tv_sec, (int)diff.tv_usec);
+
+
+        /*
+         * Running a background process.
+         * Checking if any background processes have finished
+         * since last process start.
+         */
+
+        } else {
+          do {                          /* Checks while there still are already
+                                           terminated processes, non-blocking */
+            return_pid = waitpid(-1, &status, WNOHANG);
+            if(return_pid == -1){ perror("Wait failed"); exit(1); }
+            if(return_pid != 0){
+              fprintf(stdout, "Background process %d terminated\n", return_pid);
+            }
+          } while(return_pid != 0);
+        }
       }
     }
   }
@@ -125,7 +175,7 @@ int main(int argc, char *argv[]){
 
 
 void parse_command(char *cmd_string, char *cmd_argv[], int *mode){
-  char *p = cmd_string;
+  char *p = cmd_string;                 /* Holds current character position */
   while(*p == ' ' || *p == '\n') p++;
   while(*p != '\0'){
     *cmd_argv = p;                      /* Adds word pointer from input to
@@ -148,7 +198,7 @@ void parse_command(char *cmd_string, char *cmd_argv[], int *mode){
 
 
 struct timeval time_passed(struct timeval start, struct timeval end){
-  struct timeval diff;
+  struct timeval diff;                  /* Holds time difference end-start */
   diff.tv_sec = end.tv_sec-start.tv_sec;
   diff.tv_usec = end.tv_usec-start.tv_usec;
   if(diff.tv_usec<0){ diff.tv_usec += 1000000; diff.tv_sec--; }
