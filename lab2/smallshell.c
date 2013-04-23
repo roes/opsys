@@ -181,12 +181,12 @@ void parse_command(char *cmd_string, char *cmd_argv[], int *mode){
     *cmd_argv = p;                      /* Adds word pointer from input to
                                            argument array */
     while(*p != ' ' && *p != '\0' &&
-          *p != '\n'){                  /* Loops past all chars in current word */
-      if(*p == '&') { *mode = BACKGROUND; *p = '\0'; }
+          *p != '&' && *p != '\n'){     /* Loops past all chars in current word */
       p++;
     }
-    while(*p == ' ' || *p == '\n'){     /* Loops past all word separators and
-                                           replace with null char */
+    while(*p == ' ' || *p == '\n' ||     /* Loops past all word separators and */
+          *p == '&'){                    /* replace with null char */
+      if(*p == '&') *mode = BACKGROUND;
       *p = '\0';
       p++;
     }
