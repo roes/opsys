@@ -36,13 +36,16 @@ För att man alltid skall kunna tvinga processer att avsluta vid behov. Om man f
 Det är en funktionspekare till en funktion som tar en \texttt{int} som parameter och returnerar \texttt{void}. Funktionspekare används för att skicka en funktion som parameter till en annan funktion.
 
 \subsubsection*{6. Vilket systemanrop använder \texttt{sigset(3c)} troligtvis för att installera en signalhanterare?}
-\texttt{sigaction(2)}
+\texttt{sigaction(2)} 
 
 \subsubsection*{7. Hur gör man för att din kommandotolk inte skall termineras då en förgrundprocess i den termineras med \texttt{<Ctrl-c>}?}
-
+Det går att förhindra genom att registrera handlern \texttt{SIG_IGN} för signalen \texttt{SIGINT}. Då ignoreras signalen \texttt{SIGINT} 
+som genereras av \texttt{<Ctrl-c>}. Sedan måste man komma ihåg att återställa signalhanterarn för förgrundsprocceser då signalhanterare ärvs vid \texttt{fork()}. 
+Det kan man genom att sätta flaggan \texttt{SA_RESETHAND} för den s\texttt{sigaction} man registrerar.
+ 
 
 \subsubsection*{8. Varför har man inte bytt `working directory' till \texttt{/home/ds/robertr} när man avslutat miniShell:et?}
-Processen skapar sin egen kopia av miljövariablerna. När man i miniShell:et byter working directory (wd) ändras bara processens egna wd, så när man stänger processen (miniShell:et) är man åter i samma directory som innan körningen.
+Processen skapar sin egen kopia av miljövariablerna. När man i miniShell:et byter working directory (wd) ändras bara-processens egna wd, så när man stänger processen (miniShell:et) är man åter i samma directory som innan körningen.
 
 \section*{Filkatalog}
 Alla filer som är associerade med denna lab går att finna i:\\
