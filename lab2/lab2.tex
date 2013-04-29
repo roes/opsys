@@ -24,7 +24,7 @@
 Genom att skapa nya processer att exekvera kommandon i kan systemet göra flera saker parallellt. Man kan även låta föräldra-processen hantera eventuella signaler/returvärden från barn-processerna på önskat sätt, t.ex. undvika att avbryta hela programmet bara för att ett kommando misslyckats.
 
 \subsubsection*{2. Vad händer om man inte i kommandotolken exekverar \texttt{wait} för en barn-process som avslutas?}
-All barn-processens information ligger kvar i processtabellen, man lämnar kvar en så kallad zombie-process.
+All information om barn-processen ligger kvar i processtabellen, man lämnar kvar en så kallad zombie-process.
 
 \subsubsection*{3. Hur skall man utläsa \texttt{SIGSEGV}?}
 \texttt{SIGSEGV} är invalid memory reference, som segfault eller bus error. Man försöker alltså komma åt en plats i minnet man inte har tillgång till.
