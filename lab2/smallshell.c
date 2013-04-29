@@ -116,8 +116,9 @@ int main(int argc, char *argv[]){
 
     else {
       pid_t childpid;                   /* Holds pid returned from fork() */
-      sighandler(SIGINT, NULL,          /* Reset SIGINT handler, the children should */
-      			 SA_RESETHAND);	        /* not ignore SIGINT */
+      if(mode == FOREGROUND)
+      	sighandler(SIGINT, NULL,          /* Reset SIGINT handler, the children should */
+      			   SA_RESETHAND);	      /* not ignore SIGINT */
                                                    
       
       childpid = fork();
