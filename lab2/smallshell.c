@@ -135,16 +135,21 @@ int main(int argc, char *argv[]){
          */
 
         if(mode == FOREGROUND){
-          return_value = gettimeofday(&start, NULL);
+          int terminated = 0;			/* Set to 1 when the forground 
+                                           process is terminated */
+          return_value = gettimeofday(&start, NULL);          
           if(return_value == -1){ perror("Couldn't get time"); exit(1); }
           do {                          /* Wait for processes to finish until
                                            current foreground process is done */
             return_pid = wait(&status);
             if(return_pid == -1){ perror("Wait failed"); exit(1); }
-            fprintf(stdout, "%s process %d terminated\n",
-                    (return_pid == childpid)?"Foreground":"Background",
-                    return_pid);
-          } while(return_pid != childpid);
+            if(WIFEXITED(status) ||     /* Check if the child terminated */
+               WIFSIGNALED(status)){
+              fprintf(stdout, "%s process %d terminated\n",
+                      (return_pid == childpid)?"Foreground":"Background",
+                      return_pid);
+              if(return_pid == childpid) terminated = 1;}
+          } while(!terminated);
           return_value = gettimeofday(&end, NULL);
           if(return_value == -1){ perror("Couldn't get time"); exit(1); }
           diff = time_passed(start, end);
@@ -164,7 +169,9 @@ int main(int argc, char *argv[]){
             return_pid = waitpid(-1, &status, WNOHANG);
             if(return_pid == -1){ perror("Wait failed"); exit(1); }
             if(return_pid != 0){
-              fprintf(stdout, "Background process %d terminated\n", return_pid);
+              if(WIFEXITED(status) ||     /* Check if the child terminated */
+                 WIFSIGNALED(status))
+                fprintf(stdout, "Background process %d terminated\n", return_pid);
             }
           } while(return_pid != 0);
         }
