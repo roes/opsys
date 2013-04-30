@@ -19,8 +19,7 @@
  *   A command can be up to 70 characters and have a maximum
  *   of 5 parameters.
  */
- 
-#define _XOPEN_SOURCE 500				/* Needed for sighold and sigrelse */
+
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -59,11 +58,11 @@ struct timeval time_passed(struct timeval start, /* Start time */
 
 /* sighandler
  *
- * sighandler handles the parameters to sigaction()
+ * sighandler sets up new behaviour for the specified signal.
  */
 void sighandler(int signal_code,          /* The signal */
-                void (*handler)(int sig), /* Function that should handle the signal */
- 			    int flags);               /* flags */
+                void (*handler)(int sig), /* Function that handles the signal */
+                int flags);               /* Flags */
 
 
 int main(int argc, char *argv[]){
@@ -76,9 +75,8 @@ int main(int argc, char *argv[]){
 
   while(1){
     int return_value;                   /* Return value from system calls */
-	sighandler(SIGINT, SIG_IGN, 0);	    /* The shell should not terminate
-	                                       from a SIGINT */                    
-	
+
+
     /*         
      * Read and parse commandline input.
      */
@@ -116,11 +114,6 @@ int main(int argc, char *argv[]){
 
     else {
       pid_t childpid;                   /* Holds pid returned from fork() */
-      if(mode == FOREGROUND)
-      	sighandler(SIGINT, NULL,          /* Reset SIGINT handler, the children should */
-      			   SA_RESETHAND);	      /* not ignore SIGINT */
-                                                   
-      
       childpid = fork();
       if(childpid < 0){ perror("Cannot fork()"); exit(1); }
 
@@ -140,12 +133,11 @@ int main(int argc, char *argv[]){
        * Parent process
        */
       else {       
-      	sighandler(SIGINT, SIG_IGN, 0); /* Reignore SIGINT */
         int status;                     /* Holds status returned from wait() */
         pid_t return_pid;               /* Holds pid returned from wait() */
         struct timeval start, end, diff;/* Holds start, end and run time */
         fprintf(stderr, "Spawned %s process pid: %d\n",
-            (mode == FOREGROUND)?"foreground":"background", childpid);
+                (mode == FOREGROUND)?"foreground":"background", childpid);
 
 
         /*
@@ -154,14 +146,15 @@ int main(int argc, char *argv[]){
          */
 
         if(mode == FOREGROUND){
+          sighandler(SIGINT, SIG_IGN, 0);/* Ignore SIGINT in parent while
+                                            foreground process is running */
           return_value = gettimeofday(&start, NULL);
           if(return_value == -1){ perror("Couldn't get time"); exit(1); }
           do {                          /* Wait for processes to finish until
                                            current foreground process is done */
             return_pid = wait(&status);
-            
             if(return_pid == -1){ perror("Wait failed"); exit(1); }
-              fprintf(stderr, "%s process %d terminated\n",
+            fprintf(stderr, "%s process %d terminated\n",
                     (return_pid == childpid)?"Foreground":"Background",
                     return_pid);
           } while(return_pid != childpid);
@@ -170,6 +163,7 @@ int main(int argc, char *argv[]){
           diff = time_passed(start, end);
           fprintf(stderr, "process took: %d:%.6d s\n",
                   (int)diff.tv_sec, (int)diff.tv_usec);
+          sighandler(SIGINT, SIG_DFL, 0);/* Reset SIGINT to default behavior */
 
 
         /*
@@ -184,7 +178,7 @@ int main(int argc, char *argv[]){
             return_pid = waitpid(-1, &status, WNOHANG);
             if(return_pid == -1){ perror("Wait failed"); exit(1); }
             if(return_pid != 0){
-                fprintf(stderr, "Background process %d terminated\n", return_pid);
+              fprintf(stderr, "Background process %d terminated\n", return_pid);
             }
           } while(return_pid != 0);
         }
@@ -225,12 +219,12 @@ struct timeval time_passed(struct timeval start, struct timeval end){
   return diff;
 }
 
-void sighandler(int signal_code, void (*handler)(int sig), int flags ) {
-	int return_value;
-	struct sigaction new_sa;
-	new_sa.sa_handler = handler;
-	new_sa.sa_flags = flags;
-	return_value = sigaction( signal_code, &new_sa, (void *) 0 );	
-	if(return_value == -1){ perror("sigaction() failed"); exit(1); }
+void sighandler(int signal_code, void (*handler)(int sig), int flags ){
+  int return_value;
+  struct sigaction new_sa;
+  new_sa.sa_handler = handler;
+  new_sa.sa_flags = flags;
+  return_value = sigaction( signal_code, &new_sa, (void *) 0 );
+  if(return_value == -1){ perror("sigaction() failed"); exit(1); }
 }
 
