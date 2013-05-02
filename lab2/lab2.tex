@@ -16,9 +16,25 @@
 \maketitle
 
 \section*{Problembeskrivning}
-Skriv en enkel kommandotolk för UNIX med två stycken inbyggda kommandon: \texttt{cd} och \texttt{exit}. Tolken skall också kunna köra andra kommandon med upp till fem stycken parametrar som matas in av användaren. Dessa körs antingen som förgrund- eller bakgrundsprocesser beroende på om den sista paremetern är '\&' eller inte. Skillnaden mellan förgrunds och bakgrundsprocesser är att man inte kan mata in mer kommandon sålänge en förgrundsprocess körs. 
+Uppgiften var att skriva en enkel kommandotolk för UNIX med två stycken inbyggda kommandon: \texttt{cd} och \texttt{exit}. Tolken skall också kunna köra andra kommandon med upp till fem stycken parametrar som matas in av användaren. Dessa körs antingen som förgrund- eller bakgrundsprocesser beroende på om den sista paremetern är '\&' eller inte. Skillnaden mellan förgrunds och bakgrundsprocesser är att man inte kan mata in mer kommandon sålänge en förgrundsprocess körs. Information om processer ska skrivas ut när de skapas och termineras. För förgrundsprocesser ska också tiden kommandot tog att exekveras skrivas ut. Signalen \texttt{SIGINT} som genereras med \texttt{<Ctrl-c>} ska inte avbryta kommandotolken om en förgrunds eller bakgrundsprocess avluslutas på det viset. 
 
 \section*{Programbeskrivning}
+Innan programmet går in i en oändlig loop läses miljövariablen \texttt{HOME} med  \texttt{getenv(3)} samt det nuvarande arbetsdirectoryt med \texttt{getcvd(3)}. Sedan startas loopen.
+\\
+Varje loop börjar med att läsa in ett kommando med \texttt{fgets(3)}. Strängen som läses in skickas därefter till \texttt{parse_command} som tar tre parametrar: kommandosträngen som skall tolkas, en pekare till en sträng-array där resultatet av parsningen kommer att sparas och en pekare till ett helttal som sätts till antingen noll eller ett beroende på om kommandot ska köras i för- eller bakgrunden. \texttt{parse_command} delar kort sagt kommandosträngen vid varje ordseparator och bygger upp en sträng-array som går att skicka som argumentvektor till \texttt{execvp(3)}. 
+\\
+Om kommandot är ett av de ibyggda, \texttt{exit} eller \texttt{cd}, så stängs programmet av eller så används \texttt{chdir(3)} för att bytt arbetsdirectory. Om det angivna directoryt är felaktigt sätts arbetsdirectoryt till \texttt{HOME}.
+\\
+Om kommandot inte var ett av de inbyggda så skapas en barnprocess med \texttt{fork(3)} som i sin tur exekverar kommandot. Shellet skriver ut information om den startade processen och börjar sedan vänta på sina barn. Väntandet sker på olika sätt beroende på om den startade processen var en för- eller bakgrundsprocess:
+\\
+Förgrundsprocess:
+Till att börja med så blockeras signalen \texttt{SIGINT} genom ett anrop till \texttt{sigaction(3)} där funktionen \texttt{SIG_IGN} sätts som haterare för \texttt{SIGINT}. Detta görs gör så att shellet ignorerar \texttt{SIG_IGN} och förhindrar att den stängs av om förgrundsprocessen avslutas med \texttt{<Ctrl-c>}. Starttiden för processen hämtas med \texttt{gettimeofday(3)}. Sedan väntar shellet med  \texttt{wait(3)} på att förgrundsprocessen ska avslutas. Terminationen av tidigare startade backgrundsprocesser kan dock göra så att \texttt{wait(3)} returnerar. Detta är bra då tidigare startade backgrundsprocesser kan städas undan under tiden man väntar. Om det pid som \texttt{wait(3)} inte stämmer överens med förgrundsprocessens pid så väntar shellet en gång till.
+När förgrundsprocessen returnerat ränknas tidskillnaden mellan start- och sluttid ut med funktionen \texttt{time_passed} som tar två parametrar: start- och sluttid av typen \texttt{struct timeval}. Tidsskillanden skrivs ut och sedan återställs hanteraren för signalen \texttt{SIGINT} genom att sätta flaggan \texttt{SA_RESETHAND} vid anrop till \texttt{sigaction(3)}.
+\\
+Backgrundsprocess:
+När en backgrundsprocces har startas vill man inte vänta särskilt länge tills nästa kommando kan läsas in. Därför körs \texttt{waitpid(3)} med flaggan \texttt{WNOHANG} satt upprepade gånger tills det returnerade piden är noll. Vilket innebär att det inte finns någon terminerad och ickeuppstädad barnprocess kvars.
+ 
+
 
 \subsection*{Förberedelsefrågor}
 \subsubsection*{1. Motivera varför det ofta är bra att exekvera kommandon i en separat process}
@@ -52,13 +68,13 @@ Alla filer som är associerade med denna lab går att finna i:\\
 Filer:
 \begin{description}
 \item[smallshell.c] källkoden
-%\item[Makefile] makefil för att bygga programmet
+\item[Makefile] makefil för att bygga programmet
 \item[lab2-rapport.pdf] denna rapport i pdf-format
 \item[exampleRuns.txt] exempel på körningar av programmet
 \end{description}
 
 \section*{Utskrift med kompileringskommandon}
-%\lstinputlisting[basicstyle=\footnotesize, breaklines]{commands.txt}
+lstinputlisting[basicstyle=\footnotesize, breaklines]{commands.txt}
 
 \section*{Källkod}
 \lstinputlisting[language=C, xleftmargin=-1in, basicstyle=\footnotesize]{smallshell.c}
