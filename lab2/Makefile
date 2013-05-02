@@ -1,2 +1,2 @@
 all:
-	gcc -Wall -o smallshell.out smallshell.c 
+	gcc -Wall -o smallshell.o smallshell.c 
