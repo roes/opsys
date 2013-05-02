@@ -1,6 +1,6 @@
 Script started on 2013-05-02T13:41:25 CEST
 frhi@karmosin-07:~/Kurser/Ar4/OS/opsys/lab2$ gcc -Wall -o smallshell.o smallshell.c
-frhi@karmosin-07:~/Kurser/Ar4/OS/opsys/lab2$ ./smallshell.c
+frhi@karmosin-07:~/Kurser/Ar4/OS/opsys/lab2$ ./smallshell.c
 /afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ thunderbird
 Spawned foreground process pid: 31090
 Foreground process 31090 terminated
@@ -45,7 +45,7 @@ Foreground process 17315 terminated
 process took: 0:001150 s
 /afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab1$ ./a.out
 Spawned foreground process pid: 25458
-CLASSPATH=.:/afs/nada.kth.se/home/e/u1eq9h3e/Progaming/datadasen/lab2/jdbc.jar:.:/afs/nad a.kth.se/home/e/u1eq9h3e/Progaming/datadasen/lab2/jdbc.jar:.:/afs/nada.kth.se/home/e/u1eq 9h3e/Progaming/datadasen/lab2/jdbc.jar:.:/afs/nada.kth.se/info/syntax05/Cup
+CLASSPATH=.:/afs/nada.kth.se/home/e/u1eq9h3e/Progaming/datadasen/lab2/jdbc.jar:.:/afs/nad a.kth.se/home/e/u1eq9h3e/Progaming/datadasen/lab2/jdbc.jar:.:/afs/nada.kth.se/home/e/u1eq 9h3e/Progaming/datadasen/lab2/jdbc.jar:.:/afs/nada.kth.se/info/syntax05/Cup
 COLORTERM=gnome-terminal
 ..
 .
