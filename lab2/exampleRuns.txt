@@ -1,0 +1,73 @@
+Script started on 2013-05-02T13:41:25 CEST
+frhi@karmosin-07:~/Kurser/Ar4/OS/opsys/lab2$ gcc -Wall -o smallshell.o smallshell.c
+frhi@karmosin-07:~/Kurser/Ar4/OS/opsys/lab2$ ./smallshell.c
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ thunderbird
+Spawned foreground process pid: 31090
+Foreground process 31090 terminated
+process took: 3:734015 s
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ emacs &
+Spawned background process pid: 26574
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ ls
+Spawned foreground process pid: 25226
+Background process 26574 terminated
+Makefile	smallshell.c   smallshell.out
+Foreground process 25226 terminated
+process took: 0:001201 s
+
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ emacs &
+Spawned background process pid: 28742
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ thunderbird
+Spawned foreground process pid: 26589
+Foreground process 26589 terminated
+process took: 3:814542 s
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ ls
+Spawned foreground process pid: 13799
+Background process 28742 terminated
+Makefile	smallshell.c   smallshell.out
+Foreground process 13799 terminated
+process took: 0:001343 s
+
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ emacs &
+Spawned background process pid: 24150
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ thunderbird &
+Spawned background process pid: 25175
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ cd ../lab1
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab1$ make
+Spawned foreground process pid: 24815
+gcc -Wall -o a.out digenv.c
+Foreground process 24815 terminated
+process took: 0:196469 s
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab1$ ls
+Spawned foreground process pid: 17315
+a.out	      digenv2.c~  exampleRuns.txt   lab1.tex  sigkill-test.c
+commands.txt  digenv.c	  exampleRuns.txt~  Makefile  sigkill-test.c~
+Foreground process 17315 terminated
+process took: 0:001150 s
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab1$ ./a.out
+Spawned foreground process pid: 25458
+CLASSPATH=.:/afs/nada.kth.se/home/e/u1eq9h3e/Progaming/datadasen/lab2/jdbc.jar:.:/afs/nad a.kth.se/home/e/u1eq9h3e/Progaming/datadasen/lab2/jdbc.jar:.:/afs/nada.kth.se/home/e/u1eq 9h3e/Progaming/datadasen/lab2/jdbc.jar:.:/afs/nada.kth.se/info/syntax05/Cup
+COLORTERM=gnome-terminal
+..
+.
+..
+UBUNTU_MENUPROXY=libappmenu.so
+USER_ENV_INIT_DONE=TrueForeground process 25458 terminated
+process took: 3:936172 s
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab1$ firefox
+Spawned foreground process pid: 32651
+Background process 25175 terminated
+^C
+Foreground process 32651 terminated
+process took: 9:763334 s
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab1$ ls
+Spawned foreground process pid: 4395
+Background process 24150 terminated
+a.out	      digenv2.c~  exampleRuns.txt   lab1.tex  sigkill-test.c
+commands.txt  digenv.c	  exampleRuns.txt~  Makefile  sigkill-test.c~
+Foreground process 4395 terminated
+process took: 0:001105 s
+/afs/nada.kth.se/home/e/u1eq9h3e/Kurser/Ar4/OS/opsys/lab2$ exit
+frhi@karmosin-07:~/Kurser/Ar4/OS/opsys/lab2$ exit
+exit
+
+Script done on 2013-05-02T13:57:00 CEST
