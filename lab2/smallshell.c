@@ -168,7 +168,7 @@ int main(int argc, char *argv[]){
           diff = time_passed(start, end);
           fprintf(stderr, "process took: %d:%.6d s\n",
                   (int)diff.tv_sec, (int)diff.tv_usec);
-          sighandler(SIGINT, NULL, SA_RESETHAND);/* Reset SIGINT to default behavior */
+          sighandler(SIGINT, SIG_DFL, 0);/* Reset SIGINT to default behavior */
 
 
         /*
