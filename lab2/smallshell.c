@@ -61,7 +61,7 @@ struct timeval time_passed(struct timeval start, /* Start time */
  * sighandler sets up new behaviour for the specified signal.
  */
 void sighandler(int signal_code,          /* The signal */
-                void (*handler)(int sig), /* Function that handles the signal */
+                void (*handler)(int sig), /* Function that should handle the signal */
                 int flags);               /* Flags */
 
 
@@ -71,8 +71,9 @@ int main(int argc, char *argv[]){
   int mode;                             /* fg or bg process */
   char *home = getenv("HOME");          /* Home directory path */
   char current_wd[MAX_PATH_LENGTH];     /* Current working directory */
-  getcwd(current_wd, MAX_PATH_LENGTH);
-
+  char *return_string = getcwd(current_wd, MAX_PATH_LENGTH);
+  if(return_string == NULL){ perror("Couldn't get current working dir"); exit(1); }
+  
   while(1){
     int return_value;                   /* Return value from system calls */
 
@@ -104,7 +105,8 @@ int main(int argc, char *argv[]){
         return_value = chdir(home);
         if(return_value == -1){ perror("Could not cd to HOME"); exit(1); }
       }
-      getcwd(current_wd, MAX_PATH_LENGTH);
+      return_string = getcwd(current_wd, MAX_PATH_LENGTH);
+      if(return_string == NULL){ perror("Couldn't get current working dir"); exit(1); }
     }
 
 
@@ -121,8 +123,7 @@ int main(int argc, char *argv[]){
       /*
        * Child process
        */
-
-      else if(childpid == 0){
+      else if(childpid == 0){      
         (void) execvp(cmd_argv[0], cmd_argv);
         perror("Cannot exec");
         exit(1);
@@ -163,7 +164,7 @@ int main(int argc, char *argv[]){
           diff = time_passed(start, end);
           fprintf(stderr, "process took: %d:%.6d s\n",
                   (int)diff.tv_sec, (int)diff.tv_usec);
-          sighandler(SIGINT, SIG_DFL, 0);/* Reset SIGINT to default behavior */
+          sighandler(SIGINT, NULL, SIG_IGN);/* Reset SIGINT to default behavior */
 
 
         /*
