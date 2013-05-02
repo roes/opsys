@@ -15,8 +15,8 @@
  *   PATH, HOME
  *
  * USAGE
- *	gcc -Wall -o smallshell.o smallshell.c
- *  ./smallshell.o
+ *   gcc -Wall -o smallshell.o smallshell.c
+ *   ./smallshell.o
  *
  * NOTES:
  *   |, <, > and ; are not supported.
@@ -127,6 +127,7 @@ int main(int argc, char *argv[]){
       /*
        * Child process
        */
+
       else if(childpid == 0){      
         (void) execvp(cmd_argv[0], cmd_argv);
         perror("Cannot exec");
