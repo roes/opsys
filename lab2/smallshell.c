@@ -14,6 +14,10 @@
  * ENVIRONMENT:
  *   PATH, HOME
  *
+ * USAGE
+ *	gcc -Wall -o smallshell.o smallshell.c
+ *  ./smallshell.o
+ *
  * NOTES:
  *   |, <, > and ; are not supported.
  *   A command can be up to 70 characters and have a maximum
@@ -164,7 +168,7 @@ int main(int argc, char *argv[]){
           diff = time_passed(start, end);
           fprintf(stderr, "process took: %d:%.6d s\n",
                   (int)diff.tv_sec, (int)diff.tv_usec);
-          sighandler(SIGINT, NULL, SIG_IGN);/* Reset SIGINT to default behavior */
+          sighandler(SIGINT, NULL, SA_RESETHAND);/* Reset SIGINT to default behavior */
 
 
         /*
