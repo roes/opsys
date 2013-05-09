@@ -1,8 +1,11 @@
+#define _GNU_SOURCE
+
 #include "brk.h"
 #include <unistd.h>
 #include <string.h> 
 #include <errno.h> 
 #include <sys/mman.h>
+#include <stdio.h>
 
 #define NALLOC 1024                                     /* minimum #units to request */
 
@@ -30,12 +33,12 @@ void free(void * ap)
   if(ap == NULL) return;                                /* Nothing to do */
 
   bp = (Header *) ap - 1;                               /* point to block header */
-  for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
+  for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr) /* find the place in the free list where the block should be */
     if(p >= p->s.ptr && (bp > p || bp < p->s.ptr))
       break;                                            /* freed block at atrt or end of arena */
 
   if(bp + bp->s.size == p->s.ptr) {                     /* join to upper nb */
-    bp->s.size += p->s.ptr->s.size;
+    bp->s.size += p->s.ptr->s.size;						/* add the released block to the next = p->s.ptr*/
     bp->s.ptr = p->s.ptr->s.ptr;
   }
   else
@@ -43,7 +46,8 @@ void free(void * ap)
   if(p + p->s.size == bp) {                             /* join to lower nbr */
     p->s.size += bp->s.size;
     p->s.ptr = bp->s.ptr;
-  } else
+  } 
+  else
     p->s.ptr = bp;
   freep = p;
 }
@@ -105,21 +109,58 @@ void * malloc(size_t nbytes)
     base.s.ptr = freep = prevp = &base;
     base.s.size = 0;
   }
+  
+
+  /* First fit */
+#if STRATEGY == 1										
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
     if(p->s.size >= nunits) {                           /* big enough */
       if (p->s.size == nunits)                          /* exactly */
-	prevp->s.ptr = p->s.ptr;
-      else {                                            /* allocate tail end */
-	p->s.size -= nunits;
-	p += p->s.size;
-	p->s.size = nunits;
+		prevp->s.ptr = p->s.ptr;						/* remove p from the freelist */
+      else {                                           
+	  
+		
       }
       freep = prevp;
       return (void *)(p+1);
     }
     if(p == freep)                                      /* wrapped around free list */
       if((p = morecore(nunits)) == NULL)
-	return NULL;                                    /* none left */
+		return NULL;                                    /* none left */
   }
+#endif
+
+  /* Best fit ineffective? */
+#if STRATEGY == 2										
+  Header *bestp = NULL, *bestprev;
+  unsigned bestSize = -1;
+
+  for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
+    if(p->s.size >= nunits) {                           /* big enough */
+      if(p->s.size < bestSize || bestp == NULL) {		/* Better fit */
+		bestp = p;
+		bestSize = p->s.size;
+		bestprev = prevp;
+      }      
+    }
+    if(p == freep && bestp == NULL) 	                /* wrapped around free list and haven't found a suitable block*/	
+      if((p = morecore(nunits)) == NULL)
+		return NULL;                                    /* none left */	
+  }
+  
+  if (bestp->s.size == nunits) {                        /* exactly */
+	bestprev->s.ptr = bestp->s.ptr;						/* remove bestp from the freelist */
+  } 
+  else {												/* allocate tail end */
+    bestp->s.size -= nunits;							/* not sure about this */
+	bestp += bestp->s.size;
+	bestp->s.size = nunits;
+  }
+  
+  freep = bestprev;
+  return (void *)(bestp+1);
+#endif  
+  
 }
+
 
