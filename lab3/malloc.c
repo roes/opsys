@@ -118,8 +118,9 @@ void * malloc(size_t nbytes)
       if (p->s.size == nunits)                          /* exactly */
 		prevp->s.ptr = p->s.ptr;						/* remove p from the freelist */
       else {                                           
-	  
-		
+		p->s.size -= nunits;							/* Not sure about this */
+		p += p->s.size;
+		p->s.size = nunits;	
       }
       freep = prevp;
       return (void *)(p+1);
@@ -133,7 +134,7 @@ void * malloc(size_t nbytes)
   /* Best fit ineffective? */
 #if STRATEGY == 2										
   Header *bestp = NULL, *bestprev;
-  unsigned bestSize = -1;
+  unsigned bestSize = -100000;
 
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
     if(p->s.size >= nunits) {                           /* big enough */
@@ -142,10 +143,15 @@ void * malloc(size_t nbytes)
 		bestSize = p->s.size;
 		bestprev = prevp;
       }      
-    }
-    if(p == freep && bestp == NULL) 	                /* wrapped around free list and haven't found a suitable block*/	
-      if((p = morecore(nunits)) == NULL)
-		return NULL;                                    /* none left */	
+    } 
+    if(p == freep) { 	               				    /* wrapped around free list */	
+		if(bestp == NULL) {								/* no block big enough*/
+		  if((p = morecore(nunits)) == NULL)
+			return NULL;                                /* none left */	
+		}
+		else 
+		  break;
+	}
   }
   
   if (bestp->s.size == nunits) {                        /* exactly */
@@ -163,4 +169,30 @@ void * malloc(size_t nbytes)
   
 }
 
-
+void *realloc(void * p, size_t nbytes)
+{  
+ /* unsigned nunits = (nbytes+sizeof(Header)-1)/sizeof(Header) +1;*/
+  unsigned ounits = ((Header *) p - 1)->s.size;
+  /*fprintf(stderr, "Ounits: %d\n",ounits);*/
+ /* fprintf(stderr, "Header size: %d\n",sizeof(Header));*/
+/*  size_t obytes = (ounits-1) * sizeof(Header)+1-sizeof(Header);*/
+  /*fprintf(stderr, "Obytes: %d\n",obytes);*/
+  
+  void *newp = malloc(nbytes);
+  memcpy(newp, p, (nbytes < ounits*2) ? nbytes : ounits*2);
+  free(p);
+  return newp;
+  
+}
+/*
+int main() {
+  int *i = malloc(sizeof(int));
+  fprintf(stderr, "Allocing: %d\n",sizeof(int));
+  *i = 2;
+  
+  fprintf(stderr, "Before val: %d\n",*i);
+  i = realloc(i, sizeof(int));
+  fprintf(stderr, "New val: %d\n",*i);
+  return 0;
+}
+*/
