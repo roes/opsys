@@ -1,0 +1,64 @@
+\documentclass[a4paper]{article}
+
+\usepackage[swedish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{courier}
+\usepackage{listings}
+\usepackage{pdfpages}
+
+\title{Minneshantering}
+\date{ID2200 - Laboration 3}
+\author{Cecilia Roes \\ Fredrik Hillnertz}
+
+\begin{document}
+\includepdf{pre_lab3.pdf}
+\maketitle
+
+\section*{Problembeskrivning}
+
+\section*{Programbeskrivning}
+% Skriv om metod för hopslagning av minnesblock (2.2 punkt 6)
+% Redan impl i free.
+
+\subsection*{Förklaring av kod som kompileras om MMAP är definierat}
+
+\subsubsection*{I koden initialiseras \texttt{\_\_endHeap} mha \texttt{sbrk(2)} vilket inte är så snyggt och inte skulle fungera på system där \texttt{sbrk(2)} inte stöds. Vad händer om du tar bort dessa initialiseringar (två \texttt{if}-satser)? Vad skulle \texttt{\_\_endHeap} då representera?}
+
+\subsubsection*{Vad händer om man skickar \texttt{NULL} som första parameter till \texttt{mmap(2)}? Vad fungerar/fungerar inte? Vet man då var minnet reserveras?}
+
+\subsubsection*{Vad händer om man byter ut/tar bort flaggan \texttt{MAP\_SHARED} i anropet till \texttt{mmap(2)}?}
+
+\section*{Utvärdering}
+% Lägg till -O4 till kompileringen för maximal optimering
+
+% Liten, stor och blandad storlek på data, mycket och lite data (en/flera allokeringar).
+% Repetera körningarna, använd någon form av snittvärden.
+
+\subsection*{First fit}
+
+\subsection*{Best fit}
+
+\section*{Filkatalog}
+Alla filer som är associerade med denna lab går att finna i:\\
+\texttt{frhi@shell.it.kth.se:/Kurser/OS/lab3/}
+\\
+Filer:
+\begin{description}
+\item[malloc.c] källkoden
+\item[Makefile] makefil för att bygga programmet
+\item[lab3-rapport.pdf] denna rapport i pdf-format
+%\item[exampleRuns.txt] exempel på körningar av programmet
+\end{description}
+
+\section*{Utskrift med kompileringskommandon}
+%\lstinputlisting[basicstyle=\footnotesize, breaklines]{commands.txt}
+
+\section*{Källkod}
+%\lstinputlisting[language=C, xleftmargin=-1in, basicstyle=\footnotesize]{smallshell.c}
+
+\section*{Verksamhetsberättelse och synpunkter}
+Tidsåtgång: ca h per person.
+
+\end{document}
+
