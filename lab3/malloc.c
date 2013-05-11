@@ -70,10 +70,12 @@ static Header *mergeBlocks(Header *p1,	/* Pointer to one of the blocks */
   if(p1 == p2->s.ptr) {					/* p2 -> p1 */
     p2->s.size += p1->s.size;
 	p2->s.ptr = p1->s.ptr;
+	return p2;
   }
   if (p2 == p1->s.ptr){					/* p1 -> p2 */
 	p1->s.size += p2->s.size;
 	p1->s.ptr = p2->s.ptr;
+	return p1;
   }
   
   return NULL;
