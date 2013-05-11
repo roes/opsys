@@ -63,14 +63,7 @@ void free(void * ap){
 /* morecore: ask system for more memory */
 
 #ifdef MMAP
-
 static void * __endHeap = 0;
-
-void * endHeap(void)
-{
-  if(__endHeap == 0) __endHeap = sbrk(0);
-  return __endHeap;
-}
 #endif
 
 
@@ -145,8 +138,9 @@ void * malloc(size_t nbytes)
 
   /* Best fit ineffective? */
 #if STRATEGY == 2
-  Header *bestp = NULL, *bestprev;
-  unsigned bestSize = -100000;
+  Header *bestp = NULL, 				/* Pointer to best fitting block found so far */
+         *bestprev;						/* Pointer to the block before *bestp */
+  unsigned bestSize = -100000;			/* The size of the best block found so far */
 
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
     if(p->s.size >= nunits) {           /* big enough */
@@ -161,8 +155,8 @@ void * malloc(size_t nbytes)
         if((p = morecore(nunits)) == NULL)
           return NULL;                  /* none left */
       }
-      else
-        break;
+      else								
+        break;							/* Found a nice fitting block */
     }
   }
 
@@ -170,7 +164,7 @@ void * malloc(size_t nbytes)
     bestprev->s.ptr = bestp->s.ptr;     /* remove bestp from the freelist */
   }
   else {                                /* allocate tail end */
-    bestp->s.size -= nunits;            /* not sure about this */
+    bestp->s.size -= nunits;            
     bestp += bestp->s.size;
     bestp->s.size = nunits;
   }
