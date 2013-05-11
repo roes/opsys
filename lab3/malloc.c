@@ -1,11 +1,12 @@
 #define _GNU_SOURCE
 
 #include "brk.h"
-#include <unistd.h>
-#include <string.h> 
 #include <errno.h> 
-#include <sys/mman.h>
+#include <limits.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 #define NALLOC 1024                     /* minimum #units to request */
 
@@ -140,11 +141,11 @@ void * malloc(size_t nbytes){
   }
 #endif
 
-  /* Best fit ineffective? */
+  /* Best fit */
 #if STRATEGY == 2
   Header *bestp = NULL,                 /* Pointer to best fitting block found so far */
          *bestprev;                     /* Pointer to the block before *bestp */
-  unsigned bestSize = -100000;          /* The size of the best block found so far */
+  unsigned bestSize = UINT_MAX;         /* The size of the best block found so far */
 
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
     if(p->s.size >= nunits) {           /* big enough */
@@ -153,14 +154,12 @@ void * malloc(size_t nbytes){
         bestSize = p->s.size;
         bestprev = prevp;
       }
+      if(bestSize == nunits) break;     /* Break if perfect block is found */
     }
     if(p == freep) { 	                /* wrapped around free list */
-      if(bestp == NULL) {               /* no block big enough*/
-        if((p = morecore(nunits)) == NULL)
-          return NULL;                  /* none left */
-      }
-      else								
-        break;                          /* Found a nice fitting block */
+      if(bestp != NULL) break;          /* found a big enough block */
+      if((p = morecore(nunits)) == NULL)
+        return NULL;                    /* no memory left */
     }
   }
 
@@ -168,7 +167,7 @@ void * malloc(size_t nbytes){
     bestprev->s.ptr = bestp->s.ptr;     /* remove bestp from the freelist */
   }
   else {                                /* allocate tail end */
-    bestp->s.size -= nunits;            
+    bestp->s.size -= nunits;
     bestp += bestp->s.size;
     bestp->s.size = nunits;
   }
