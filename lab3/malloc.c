@@ -176,6 +176,40 @@ void * malloc(size_t nbytes){
   return (void *)(bestp+1);
 #endif
 
+  /* Worst fit */
+#if STRATEGY == 3
+  Header *worstp = NULL,                /* Pointer to worst fitting block */
+         *worstprev;                    /* Pointer to the block before worstp */
+  unsigned worstSize = 0;               /* The size of the worst block */
+
+  for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
+    if(p->s.size >= nunits) {           /* big enough */
+      if(p->s.size > worstSize) {
+        worstp = p;
+        worstSize = p->s.size;
+        worstprev = prevp;
+      }
+    }
+    if(p == freep) { 	                /* wrapped around free list */
+      if(worstp != NULL) break;         /* found a big enough block */
+      if((p = morecore(nunits)) == NULL)
+        return NULL;                    /* no memory left */
+    }
+  }
+
+  if (worstp->s.size == nunits) {       /* exactly */
+    worstprev->s.ptr = worstp->s.ptr;   /* remove bestp from the freelist */
+  }
+  else {                                /* allocate tail end */
+    worstp->s.size -= nunits;
+    worstp += worstp->s.size;
+    worstp->s.size = nunits;
+  }
+
+  freep = worstprev;
+  return (void *)(worstp+1);
+#endif
+
 }
 
 
