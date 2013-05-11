@@ -170,15 +170,20 @@ void * malloc(size_t nbytes)
 }
 
 void *realloc(void * p, size_t nbytes)
-{  
+{
+  void *newp;
+
+  if (p == NULL) return malloc(nbytes);
+
  /* unsigned nunits = (nbytes+sizeof(Header)-1)/sizeof(Header) +1;*/
   unsigned ounits = ((Header *) p - 1)->s.size;
   /*fprintf(stderr, "Ounits: %d\n",ounits);*/
  /* fprintf(stderr, "Header size: %d\n",sizeof(Header));*/
 /*  size_t obytes = (ounits-1) * sizeof(Header)+1-sizeof(Header);*/
   /*fprintf(stderr, "Obytes: %d\n",obytes);*/
-  
-  void *newp = malloc(nbytes);
+
+  newp = malloc(nbytes);
+  if (newp == NULL && nbytes != 0) return p;
   memcpy(newp, p, (nbytes < ounits*2) ? nbytes : ounits*2);
   free(p);
   return newp;
