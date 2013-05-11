@@ -7,43 +7,50 @@
 #include <sys/mman.h>
 #include <stdio.h>
 
-#define NALLOC 1024                                     /* minimum #units to request */
+#define NALLOC 1024                     /* minimum #units to request */
 
-typedef long Align;                                     /* for alignment to long boundary */
+typedef long Align;                     /* for alignment to long boundary */
 
-union header {                                          /* block header */
+union header {                          /* block header */
   struct {
-    union header *ptr;                                  /* next block if on free list */
-    unsigned size;                                      /* size of this block  - what unit? */ 
+    union header *ptr;                  /* next block if on free list */
+    unsigned size;                      /* size of this block in sizeof(Header) units */ 
   } s;
-  Align x;                                              /* force alignment of blocks */
+  Align x;                              /* force alignment of blocks */
 };
 
 typedef union header Header;
 
-static Header base;                                     /* empty list to get started */
-static Header *freep = NULL;                            /* start of free list */
+static Header base;                     /* empty list to get started */
+static Header *freep = NULL;            /* start of free list */
 
-/* free: put block ap in the free list */
 
-void free(void * ap)
-{
+/* free: put block ap in the free list
+ *
+ */
+void free(void * ap){
   Header *bp, *p;
 
-  if(ap == NULL) return;                                /* Nothing to do */
+  if(ap == NULL) return;                /* Nothing to do */
 
-  bp = (Header *) ap - 1;                               /* point to block header */
-  for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr) /* find the place in the free list where the block should be */
+
+  /*
+   * Find the place in the free list where the block should be.
+   */
+
+  bp = (Header *) ap - 1;               /* point to block header */
+  for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
     if(p >= p->s.ptr && (bp > p || bp < p->s.ptr))
-      break;                                            /* freed block at atrt or end of arena */
+      break;                            /* freed block at atrt or end of arena */
 
-  if(bp + bp->s.size == p->s.ptr) {                     /* join to upper nb */
-    bp->s.size += p->s.ptr->s.size;						/* add the released block to the next = p->s.ptr*/
+
+  if(bp + bp->s.size == p->s.ptr) {     /* join to upper nb */
+    bp->s.size += p->s.ptr->s.size;
     bp->s.ptr = p->s.ptr->s.ptr;
   }
   else
     bp->s.ptr = p->s.ptr;
-  if(p + p->s.size == bp) {                             /* join to lower nbr */
+  if(p + p->s.size == bp) {             /* join to lower nbr */
     p->s.size += bp->s.size;
     p->s.ptr = bp->s.ptr;
   } 
@@ -51,6 +58,7 @@ void free(void * ap)
     p->s.ptr = bp;
   freep = p;
 }
+
 
 /* morecore: ask system for more memory */
 
@@ -85,7 +93,7 @@ static Header *morecore(unsigned nu)
 #else
   cp = sbrk(nu*sizeof(Header));
 #endif
-  if(cp == (void *) -1){                                 /* no space at all */
+  if(cp == (void *) -1){                /* no space at all */
     perror("failed to get more memory");
     return NULL;
   }
@@ -95,6 +103,10 @@ static Header *morecore(unsigned nu)
   return freep;
 }
 
+
+/*
+ *
+ */
 void * malloc(size_t nbytes)
 {
   Header *p, *prevp;
@@ -109,95 +121,85 @@ void * malloc(size_t nbytes)
     base.s.ptr = freep = prevp = &base;
     base.s.size = 0;
   }
-  
+
 
   /* First fit */
-#if STRATEGY == 1										
+#if STRATEGY == 1
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
-    if(p->s.size >= nunits) {                           /* big enough */
-      if (p->s.size == nunits)                          /* exactly */
-		prevp->s.ptr = p->s.ptr;						/* remove p from the freelist */
-      else {                                           
-		p->s.size -= nunits;							/* Not sure about this */
-		p += p->s.size;
-		p->s.size = nunits;	
+    if(p->s.size >= nunits) {           /* big enough */
+      if (p->s.size == nunits)          /* exactly */
+        prevp->s.ptr = p->s.ptr;
+      else {                            /* allocate tail end */
+        p->s.size -= nunits;
+        p += p->s.size;
+        p->s.size = nunits;
       }
       freep = prevp;
       return (void *)(p+1);
     }
-    if(p == freep)                                      /* wrapped around free list */
+    if(p == freep)                      /* wrapped around free list */
       if((p = morecore(nunits)) == NULL)
-		return NULL;                                    /* none left */
+        return NULL;                    /* none left */
   }
 #endif
 
   /* Best fit ineffective? */
-#if STRATEGY == 2										
+#if STRATEGY == 2
   Header *bestp = NULL, *bestprev;
   unsigned bestSize = -100000;
 
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
-    if(p->s.size >= nunits) {                           /* big enough */
-      if(p->s.size < bestSize || bestp == NULL) {		/* Better fit */
-		bestp = p;
-		bestSize = p->s.size;
-		bestprev = prevp;
-      }      
-    } 
-    if(p == freep) { 	               				    /* wrapped around free list */	
-		if(bestp == NULL) {								/* no block big enough*/
-		  if((p = morecore(nunits)) == NULL)
-			return NULL;                                /* none left */	
-		}
-		else 
-		  break;
-	}
+    if(p->s.size >= nunits) {           /* big enough */
+      if(p->s.size < bestSize || bestp == NULL) {/* Better fit */
+        bestp = p;
+        bestSize = p->s.size;
+        bestprev = prevp;
+      }
+    }
+    if(p == freep) { 	                /* wrapped around free list */
+      if(bestp == NULL) {               /* no block big enough*/
+        if((p = morecore(nunits)) == NULL)
+          return NULL;                  /* none left */
+      }
+      else
+        break;
+    }
   }
-  
-  if (bestp->s.size == nunits) {                        /* exactly */
-	bestprev->s.ptr = bestp->s.ptr;						/* remove bestp from the freelist */
-  } 
-  else {												/* allocate tail end */
-    bestp->s.size -= nunits;							/* not sure about this */
-	bestp += bestp->s.size;
-	bestp->s.size = nunits;
+
+  if (bestp->s.size == nunits) {        /* exactly */
+    bestprev->s.ptr = bestp->s.ptr;     /* remove bestp from the freelist */
   }
-  
+  else {                                /* allocate tail end */
+    bestp->s.size -= nunits;            /* not sure about this */
+    bestp += bestp->s.size;
+    bestp->s.size = nunits;
+  }
+
   freep = bestprev;
   return (void *)(bestp+1);
-#endif  
-  
+#endif
+
 }
 
-void *realloc(void * p, size_t nbytes)
-{
-  void *newp;
 
-  if (p == NULL) return malloc(nbytes);
+/*
+ *
+ */
+void *realloc(void * p,                 /* Pointer to memory to realloc */
+              size_t nbytes){           /* Amount of memory to allocate */
+  void *newp;                           /* Holds newly allocated memory */
+  size_t old_nbytes;                    /* Number of bytes allocated for p */
 
- /* unsigned nunits = (nbytes+sizeof(Header)-1)/sizeof(Header) +1;*/
-  unsigned ounits = ((Header *) p - 1)->s.size;
-  /*fprintf(stderr, "Ounits: %d\n",ounits);*/
- /* fprintf(stderr, "Header size: %d\n",sizeof(Header));*/
-/*  size_t obytes = (ounits-1) * sizeof(Header)+1-sizeof(Header);*/
-  /*fprintf(stderr, "Obytes: %d\n",obytes);*/
+  if (p == NULL) return malloc(nbytes); /* If p is NULL, realloc should behave
+                                           like malloc */
+  old_nbytes = (((Header*) p-1)->s.size - 1) * sizeof(Header);
 
   newp = malloc(nbytes);
-  if (newp == NULL && nbytes != 0) return p;
-  memcpy(newp, p, (nbytes < ounits*2) ? nbytes : ounits*2);
+  if (newp == NULL && nbytes != 0){     /* If the space cannot be allocated */
+    return p;                           /* the object pointed to by p is unchanged */
+  }
+  memcpy(newp, p, (nbytes < old_nbytes) ? nbytes : old_nbytes);
   free(p);
   return newp;
-  
 }
-/*
-int main() {
-  int *i = malloc(sizeof(int));
-  fprintf(stderr, "Allocing: %d\n",sizeof(int));
-  *i = 2;
-  
-  fprintf(stderr, "Before val: %d\n",*i);
-  i = realloc(i, sizeof(int));
-  fprintf(stderr, "New val: %d\n",*i);
-  return 0;
-}
-*/
+
