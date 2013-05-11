@@ -59,6 +59,26 @@ void free(void * ap){
   freep = p;
 }
 
+/*
+ * Merge two blocks in the free list if they are aligned.
+ * Returns a pointer to the merged block if they are aligned
+ * Return NULL otherwise
+ */
+static Header *mergeBlocks(Header *p1,	/* Pointer to one of the blocks */
+						   Header *p2){ /* Pointer to the other block */
+						   
+  if(p1 == p2->s.ptr) {					/* p2 -> p1 */
+    p2->s.size += p1->s.size;
+	p2->s.ptr = p1->s.ptr;
+  }
+  if (p2 == p1->s.ptr){					/* p1 -> p2 */
+	p1->s.size += p2->s.size;
+	p1->s.ptr = p2->s.ptr;
+  }
+  
+  return NULL;
+}
+
 
 /* morecore: ask system for more memory */
 
@@ -67,8 +87,7 @@ static void * __endHeap = 0;
 #endif
 
 
-static Header *morecore(unsigned nu)
-{
+static Header *morecore(unsigned nu){
   void *cp;
   Header *up;
 #ifdef MMAP
@@ -100,8 +119,7 @@ static Header *morecore(unsigned nu)
 /*
  *
  */
-void * malloc(size_t nbytes)
-{
+void * malloc(size_t nbytes){
   Header *p, *prevp;
   Header * morecore(unsigned);
   unsigned nunits;
