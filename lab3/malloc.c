@@ -65,19 +65,19 @@ void free(void * ap){
  * Return NULL otherwise
  */
 static Header *mergeBlocks(Header *p1,	/* Pointer to one of the blocks */
-						   Header *p2){ /* Pointer to the other block */
-						   
-  if(p1 == p2->s.ptr) {					/* p2 -> p1 */
-    p2->s.size += p1->s.size;
-	p2->s.ptr = p1->s.ptr;
-	return p2;
-  }
-  if (p2 == p1->s.ptr){					/* p1 -> p2 */
+						   Header *p2){ /* Pointer to the other block */		
+  if(p1 == p2) return NULL;					
+   
+  if (p1 + p1->s.size == p2){					/* p1 -> p2 */
 	p1->s.size += p2->s.size;
 	p1->s.ptr = p2->s.ptr;
 	return p1;
-  }
-  
+  }  
+  if(p2 + p2->s.size == p1) {					/* p2 -> p1 */
+    p2->s.size += p1->s.size;
+	p2->s.ptr = p1->s.ptr;
+	return p2;
+  }  
   return NULL;
 }
 
@@ -86,6 +86,12 @@ static Header *mergeBlocks(Header *p1,	/* Pointer to one of the blocks */
 
 #ifdef MMAP
 static void * __endHeap = 0;
+
+void * endHeap(void)
+{
+  if(__endHeap == 0) __endHeap = sbrk(0);
+  return __endHeap;
+}
 #endif
 
 
@@ -139,6 +145,11 @@ void * malloc(size_t nbytes){
   /* First fit */
 #if STRATEGY == 1
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
+	if(p->s.size < nunits && 			/* Merge */	
+	   prevp->s.size + p->s.size >= nunits){    
+	  Header *mp = mergeBlocks(prevp, p);/* Try to merge */
+	  p = (mp != NULL) ? mp : p;
+	}
     if(p->s.size >= nunits) {           /* big enough */
       if (p->s.size == nunits)          /* exactly */
         prevp->s.ptr = p->s.ptr;
@@ -149,7 +160,7 @@ void * malloc(size_t nbytes){
       }
       freep = prevp;
       return (void *)(p+1);
-    }
+    }	
     if(p == freep)                      /* wrapped around free list */
       if((p = morecore(nunits)) == NULL)
         return NULL;                    /* none left */
