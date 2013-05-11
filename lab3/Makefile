@@ -4,7 +4,7 @@ SRC	= malloc.h malloc.c tstalgorithms.c  tstcrash_complex.c tstcrash_simple.c \
 OBJ	= malloc.o tstalgorithms.o  tstcrash_simple.o\
 	  tstextreme.o tstmalloc.o  tstmemory.o tstrealloc.o tstmerge.o
 
-BIN	= t0 t1 t2 t3 t4 t5
+BIN	= t0 t1 t2 t3 t4 t5 t6 t7
 
 CFLAGS	= -g -Wall -ansi -DSTRATEGY=2
 
