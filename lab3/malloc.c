@@ -44,41 +44,19 @@ void free(void * ap){
       break;                            /* freed block at atrt or end of arena */
 
 
-  if(bp + bp->s.size == p->s.ptr) {     /* join to upper nb */
+  if(bp + bp->s.size == p->s.ptr) {     /* merge freed memory with higher nb */
     bp->s.size += p->s.ptr->s.size;
     bp->s.ptr = p->s.ptr->s.ptr;
   }
   else
     bp->s.ptr = p->s.ptr;
-  if(p + p->s.size == bp) {             /* join to lower nbr */
+  if(p + p->s.size == bp) {             /* merge freed memory with lower nb */
     p->s.size += bp->s.size;
     p->s.ptr = bp->s.ptr;
   } 
   else
     p->s.ptr = bp;
   freep = p;
-}
-
-/*
- * Merge two blocks in the free list if they are aligned.
- * Returns a pointer to the merged block if they are aligned
- * Return NULL otherwise
- */
-static Header *mergeBlocks(Header *p1,	/* Pointer to one of the blocks */
-						   Header *p2){ /* Pointer to the other block */		
-  if(p1 == p2) return NULL;					
-   
-  if (p1 + p1->s.size == p2){					/* p1 -> p2 */
-	p1->s.size += p2->s.size;
-	p1->s.ptr = p2->s.ptr;
-	return p1;
-  }  
-  if(p2 + p2->s.size == p1) {					/* p2 -> p1 */
-    p2->s.size += p1->s.size;
-	p2->s.ptr = p1->s.ptr;
-	return p2;
-  }  
-  return NULL;
 }
 
 
@@ -145,11 +123,6 @@ void * malloc(size_t nbytes){
   /* First fit */
 #if STRATEGY == 1
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
-	if(p->s.size < nunits && 			/* Merge */	
-	   prevp->s.size + p->s.size >= nunits){    
-	  Header *mp = mergeBlocks(prevp, p);/* Try to merge */
-	  p = (mp != NULL) ? mp : p;
-	}
     if(p->s.size >= nunits) {           /* big enough */
       if (p->s.size == nunits)          /* exactly */
         prevp->s.ptr = p->s.ptr;
@@ -160,7 +133,7 @@ void * malloc(size_t nbytes){
       }
       freep = prevp;
       return (void *)(p+1);
-    }	
+    }
     if(p == freep)                      /* wrapped around free list */
       if((p = morecore(nunits)) == NULL)
         return NULL;                    /* none left */
@@ -169,9 +142,9 @@ void * malloc(size_t nbytes){
 
   /* Best fit ineffective? */
 #if STRATEGY == 2
-  Header *bestp = NULL, 				/* Pointer to best fitting block found so far */
-         *bestprev;						/* Pointer to the block before *bestp */
-  unsigned bestSize = -100000;			/* The size of the best block found so far */
+  Header *bestp = NULL,                 /* Pointer to best fitting block found so far */
+         *bestprev;                     /* Pointer to the block before *bestp */
+  unsigned bestSize = -100000;          /* The size of the best block found so far */
 
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
     if(p->s.size >= nunits) {           /* big enough */
@@ -187,7 +160,7 @@ void * malloc(size_t nbytes){
           return NULL;                  /* none left */
       }
       else								
-        break;							/* Found a nice fitting block */
+        break;                          /* Found a nice fitting block */
     }
   }
 
