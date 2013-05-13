@@ -1,0 +1,8 @@
+#!/bin/bash
+echo "-- Evaluating performance of malloc --"
+echo ""
+echo "********** EVALUATING ... "
+./evaluate "b"
+./evaluate "w"
+./evaluate "r"
+echo "********** DONE ********** "
