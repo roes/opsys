@@ -19,7 +19,7 @@
 
 
 \section*{Programbeskrivning}
-% Skriv om metod för hopslagning av minnesblock (2.2 punkt 6)
+% Skriv om metod för hopslagning av minnesblock (2.2 punkt 6) La till en punkt mergemetoden
 % Redan impl i free.
 
 \subsection*{Förklaring av kod som kompileras om MMAP är definierat}
@@ -45,11 +45,19 @@ Variabeln __endHeap är en pekare som pekar på slutet av processens minne. __en
 I funktionen morecore ber man systemet om mer minne. Om MMAP är definerat gör detta med ett anrop till mmap som skapar en ny mappning i det virituella minnet för den anropade processen. mmap tar sex stycken parametrar. 1: En startaddress där minnet ska börja mappas. Här skickas __endHeap in så att minnet blir kontinuerligt. 2: Hur mycket minne som ska mappas i bytes. Detta värde bör vara en multipel av systemets page size som hittas med getpagesize(). 3: Flaggor som sätter minnesskyddet för det mappade minnet. Flaggorna som vi använder är PROT_READ och PROT_WRITE så att minnet kan skrivas och läsas. 4: Mer flaggor. De som används är MAP_SHARED vilket innebär att mappningen är synlig för andra processer, och MAP_ANONYMOUS som gör att mappningen inte "backas up" av en fil, minnet som allokeras initieras till noll och de två resterande argumenten ignoreras. När mmap har körts flyttas __endHeap fram med lika många bytes som allokerades.
 
 \subsubsection*{I koden initialiseras \texttt{\_\_endHeap} mha \texttt{sbrk(2)} vilket inte är så snyggt och inte skulle fungera på system där \texttt{sbrk(2)} inte stöds. Vad händer om du tar bort dessa initialiseringar (två \texttt{if}-satser)? Vad skulle \texttt{\_\_endHeap} då representera?}
-
+% Alla test förutom första går igenom om man inte initialiserar endHeap med sbrk(0)
+Vid första anropet kommer __endHeap att peka på nil vilket gör att systemet väljer vart minnet ska mappas när mmap anropas (se nästa fråga). Vid efterföljande anrop till mmap kommer __endHeap att peka ut en address. Systemet tar dock bara addresspekaren som ett förslag. Om det inte går att mappa in minne där så väljer systemet än en gång vart minnet ska mappas. Ibland hamnar mappningen där __endHeap pekar, ibland inte. Resultatet blir att minnet blir segmenterat. __endHeap visar nu inte längre vart i det virtuella minnet programmet är utan den blir en slags räknare som representerar hur mycket minnet som har mappats med mmap.
 
 \subsubsection*{Vad händer om man skickar \texttt{NULL} som första parameter till \texttt{mmap(2)}? Vad fungerar/fungerar inte? Vet man då var minnet reserveras?}
+Då bestämmer kärnan vart minnet ska mappas in. När vi har testat har alla test gått igenom. Risken finns dock att malloc blir mindre effektivt om kärnan allokerar minnet väldigt utspritt. Då kommer olika block inte kunna mergas ihop vilket leder till att freelistan blir längre, och det gör att det tar längre tid att gå igenom den.
 
-\subsubsection*{Vad händer om man byter ut/tar bort flaggan \texttt{MAP\_SHARED} i anropet till \texttt{mmap(2)}?}
+%worst case scenario?
+
+\subsubsection*{Hopslagning av lediga minnesblock }
+Det mest logiska är att slå ihop minnes block i metoden free. När free anropas så hittas hålet i free-listan där blocket passar in. Sedan undersöks det om det föregående och/eller det efterföljande blocket i listan ligger brevid varandra i minnet. Isåfall så slås de kontinuerliga blocken ihop till ett. Detta innebär att alla block är så ihopslagna som möjligt när malloc anropas. Free-listan är alltså så kort som det bara går vilket gör malloc mer effektiv då det går snabbare att gå igenom en liten lista.
+
+\subsubsection*{Vad händer om man byter ut/tar bort flaggan \texttt{MAP\_SHARED} i anropet till \texttt{mmap(2)}?} %inte helt hundra på den här
+I anropet till mmap så måste antingen MAP_SHARED eller MAP_PRIVET sättas. MAP_PRIVATE innebär att ändringar till det mappade området inte är synligt för andra processer. Detta gäller dock mest bara om man har en fil som backar up mappningen. Andra processer kan fortfarande komma åt minnet med en pekare. Allt fungerar fortfarande om MAP_PRIVATE används.
 
 \section*{Utvärdering}
 % Lägg till -O4 till kompileringen för maximal optimering
