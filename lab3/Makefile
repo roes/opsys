@@ -10,7 +10,7 @@ CFLAGS	= -g -Wall -ansi -DSTRATEGY=1
 
 XFLAGS	= -g -Wall -DSTRATEGY=1
 
-TESTFLAGS = -O4
+TESTFLAGS = -O4 -pg
 
 #CC	= gcc -ansi -pedantic -Wall -g -pipe -O -pg
 CC	= gcc 
@@ -41,7 +41,7 @@ t6: tstcrash_simple.o malloc.o $(X)
 	$(CC) $(CFLAGS) -o  $@ tstcrash_simple.o malloc.o $(X)
 
 t7: malloc.o $(X)
-	$(CC) $(XFLAGS) -o $@  tstcrash_complex.c malloc.o $(X) 
+	$(CC) $(XFLAGS)-o $@  tstcrash_complex.c malloc.o $(X) 
 	
 testalternate: malloc.o $(X)
 	$(CC) $(CFLAGS) $(TESTFLAGS) -o $@  testalternate.c malloc.o $(X) 
