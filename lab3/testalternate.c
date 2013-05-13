@@ -33,6 +33,7 @@ struct timeval time_passed(struct timeval start, struct timeval end){
 int main(int argc, char *argv[]) {
   int i, return_value, size;
   struct timeval start, end, diff;/* Holds start, end and run time */
+  void *memstart, *memend;
   
   if(argc <2) size = MAXSIZE;
   else {
@@ -43,6 +44,13 @@ int main(int argc, char *argv[]) {
   fprintf(stderr, "size: %d. ", size);
   return_value = gettimeofday(&start, NULL);
   if(return_value == -1){ perror("Couldn't get time"); exit(1); }
+
+#ifdef MMAP
+  memstart = endHeap();
+#else
+  memstart = (void *)sbrk(0);
+#endif
+  
   
   /* Malloc ints */
   for(i=0; i<size; i++) {
@@ -70,11 +78,16 @@ int main(int argc, char *argv[]) {
   	free(ints[i]);
   } 
   
-  fprintf(stderr, "%d %d\n", sizeof(int), sizeof(long));
+#ifdef MMAP
+  memend = endHeap();
+#else
+  memend = (void *) sbrk(0);
+#endif
+  
   return_value = gettimeofday(&end, NULL);
   if(return_value == -1){ perror("Couldn't get time"); exit(1); }
   diff = time_passed(start, end);
-  fprintf(stderr, "Exe time: %d:%.6d s\n",
-          (int)diff.tv_sec, (int)diff.tv_usec);
+  fprintf(stderr, "Exe time: %d:%.6d s\nMemory consumed: %ld\n",
+          (int)diff.tv_sec, (int)diff.tv_usec, (unsigned long)(memend-memstart));
   return 0;
 }
