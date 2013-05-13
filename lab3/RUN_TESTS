@@ -28,4 +28,6 @@ read ans
 echo -n "********************* TEST CRASH COMPLEX ...  "
 read ans
 ./t7
+echo -n "********************* TEST RANDOM ...  "
 
+./testalternate 100000
