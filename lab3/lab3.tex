@@ -16,10 +16,11 @@
 \maketitle
 
 \section*{Problembeskrivning}
-
+Implementera de metoder som förvaltar systemets minnesresurser nämligen: malloc, free och realloc. I uppgiften ingick också att implementera ett antal olika taktiker för minnesallokering i malloc, såsom first-fit, best-fit och worst-fit. Kraven på implementation är att den skall följa ANSI/ISO-standarden och att inga metoder ska läcka minne
+Utöver detta så ska tester konstrueras. I testerna ska worst och best case scenarion ingå, samt rimliga användningsfall. Med hjälp av testerna så ska tillsist metodernas prestanda med avseende på minnesutnyttjande och exekveringstid mätas, utvärderas och jämföras med prestandan för biblioteksimplementationerna av malloc.
 
 \section*{Programbeskrivning}
-% Skriv om metod för hopslagning av minnesblock (2.2 punkt 6) La till en punkt mergemetoden
+% Skriv om metod för hopslagning av minnesblock (2.2 punkt 6) La till en sektion för mergemetoden
 % Redan impl i free.
 
 \subsection*{Förklaring av kod som kompileras om MMAP är definierat}
