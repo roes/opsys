@@ -1,6 +1,7 @@
 /*
- * Mallocs many ints and longs. frees every other int and then mallocs them again.
- * No checks for correctness.
+ * Mallocs many ints and longs. frees every other int and then mallocs all of the
+ * longs
+ * No checks for correctness. A worst case scenario for our implementation of malloc
  */
 
 
@@ -63,22 +64,13 @@ int main(int argc, char *argv[]) {
   	ints[i] = malloc(sizeof(int));
   }
   
-  /* Free half of the longs */
-  for(i=0; i<size; i+=2) {
-  	free(longs[i]);
-  }
-  
-  /* Malloc half of the longs again*/
-  for(i=0; i<size; i+=2) {
-  	longs[i] = malloc(sizeof(long));
-  }
-  
    /* Free everything */
    for(i=0; i<size; i++) {
   	free(longs[i]);
   	free(ints[i]);
   } 
   
+  fprintf(stderr, "%d %d\n", sizeof(int), sizeof(long));
   return_value = gettimeofday(&end, NULL);
   if(return_value == -1){ perror("Couldn't get time"); exit(1); }
   diff = time_passed(start, end);

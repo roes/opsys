@@ -60,10 +60,19 @@ Det mest logiska är att slå ihop minnes block i metoden free. När free anropa
 I anropet till mmap så måste antingen MAP_SHARED eller MAP_PRIVET sättas. MAP_PRIVATE innebär att ändringar till det mappade området inte är synligt för andra processer. Detta gäller dock mest bara om man har en fil som backar up mappningen. Andra processer kan fortfarande komma åt minnet med en pekare. Allt fungerar fortfarande om MAP_PRIVATE används.
 
 \section*{Utvärdering}
+Bästafallet testas av programmet testBestCase. Den allokerar ett antal heltal och longs som anges av den första inparametern. Sedan frigörs allt som allokerats. 
+
+Att traversera free-listan är den största flaskhalsen i vår implementering av malloc. Men i detta test frigörs allting på slutet, alltså växer aldrig free-listan. Därför har vi i bästafallet ungefär samma prestanda som biblioteksimplementationerna av malloc.
+
+Värstafallet testas av programmet testalternate. Först allokeras en array med heltal. Därefter frigörs varannat heltal. Blocken som frigörs kommer inte att vara alignade så free kan inte slå ihop dom utan de hamnar i free-listan istället. Sedan allokeras en array med longs. Tillsist frigörs allt.
+
+Testalternate utnyttjar svagheten att malloc måste gå igenom free-listan tills ett block av lämplig storlek hittas. Free-listan blir under körningen väldigt lång när varannat block frigörs. När vi testade använde vi arrays med storleken 100000. Under testet kommer alltså free-listan bestå av 50000 block när hela arrayen med 100000 longs ska allokeras. Malloc kommer då att gå igenom hela free-listan för varje long som allokeras (de får inte plats i blocken där integerna har varit). Det tar väldigt lång tid. Eftersom vi inte sköter sådana fall på ett smart sätt så blir prestandan väldigt mycket sämre än biblioteksimplementationerna av malloc. 
+
+
 % Lägg till -O4 till kompileringen för maximal optimering
 
 % Liten, stor och blandad storlek på data, mycket och lite data (en/flera allokeringar).
-% Repetera körningarna, använd någon form av snittvärden.
+% Repetera körningarna, använd någon form av snittvärden, medelvärde och/eller medianvärde.
 
 \subsection*{First fit}
 
