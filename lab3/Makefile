@@ -1,10 +1,12 @@
 SRC	= malloc.h malloc.c tstalgorithms.c  tstcrash_complex.c tstcrash_simple.c \
-	  tstextreme.c tstmalloc.c  tstmemory.c tstrealloc.c tstmerge.o testalternate.c
+	  tstextreme.c tstmalloc.c  tstmemory.c tstrealloc.c tstmerge.o testalternate.c \
+	  testBestCase.c
 
 OBJ	= malloc.o tstalgorithms.o  tstcrash_simple.o\
-	  tstextreme.o tstmalloc.o  tstmemory.o tstrealloc.o tstmerge.o testalternate.o
+	  tstextreme.o tstmalloc.o  tstmemory.o tstrealloc.o tstmerge.o testalternate.o \
+	  testBestCase.o
 
-BIN	= t0 t1 t2 t3 t4 t5 testalternate
+BIN	= t0 t1 t2 t3 t4 t5 testalternate testBestCase
 
 CFLAGS	= -g -Wall -ansi -DSTRATEGY=1
 
@@ -44,8 +46,10 @@ t7: malloc.o $(X)
 	$(CC) $(XFLAGS)-o $@  tstcrash_complex.c malloc.o $(X) 
 	
 testalternate: malloc.o $(X)
-	$(CC) $(CFLAGS) $(TESTFLAGS) -o $@  testalternate.c malloc.o $(X) 
+	$(CC) $(CFLAGS) $(TESTFLAGS) -o $@ testalternate.c malloc.o $(X) 
 	
+testBestCase: malloc.o $(X)
+	$(CC) $(CFLAGS) $(TESTFLAGS) -o $@ testBestCase.c malloc.o $(X) 	
 
 clean:
 	\rm -f $(BIN) $(OBJ) core
