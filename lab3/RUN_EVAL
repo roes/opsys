@@ -1,10 +1,50 @@
 #!/bin/bash
+#
+# Script for running the evaluation of the different malloc implementations.
+#
+set -x
+gcc -g -Wall -ansi -O4 -c -o eval.o eval.c
+gcc -g -Wall -ansi -O4 -c -o eval_s.o eval_system_malloc.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=1 -c -o malloc1.o malloc.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2 -c -o malloc2.o malloc.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=3 -c -o malloc3.o malloc.c
+gcc -g -Wall -ansi -O4 -o eval1 eval.o malloc1.o
+gcc -g -Wall -ansi -O4 -o eval2 eval.o malloc2.o
+gcc -g -Wall -ansi -O4 -o eval3 eval.o malloc3.o
+gcc -g -Wall -ansi -O4 -o eval_s eval_s.o
+set +x
 echo "-- Evaluating performance of malloc --"
 echo ""
-echo "********** EVALUATING ... "
-./evaluate "b"
-./evaluate "w"
-./evaluate "r"
-./evaluate "+"
-./evaluate "-"
+echo "********** EVALUATING FIRST FIT... "
+./eval1 "b"
+./eval1 "w"
+./eval1 "r"
+./eval1 "+"
+./eval1 "-"
 echo "********** DONE ********** "
+echo ""
+echo "********** EVALUATING BEST FIT... "
+./eval2 "b"
+./eval2 "w"
+./eval2 "r"
+./eval2 "+"
+./eval2 "-"
+echo "********** DONE ********** "
+echo ""
+echo "********** EVALUATING WORST FIT... "
+./eval3 "b"
+./eval3 "w"
+./eval3 "r"
+./eval3 "+"
+./eval3 "-"
+echo "********** DONE ********** "
+echo ""
+echo "********** EVALUATING SYSTEM MALLOC FOR REFERENCE... "
+./eval_s "b"
+./eval_s "w"
+./eval_s "r"
+./eval_s "+"
+./eval_s "-"
+echo "********** DONE ********** "
+rm malloc*.o eval1 eval2 eval3 eval_s eval_s.o eval.o
+
