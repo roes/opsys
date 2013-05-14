@@ -144,7 +144,7 @@ void * malloc(size_t nbytes){
   /* Best fit */
 #if STRATEGY == 2
   Header *bestp = NULL,                 /* Pointer to best fitting block found so far */
-         *bestprev;                     /* Pointer to the block before *bestp */
+         *bestprev = NULL;              /* Pointer to the block before *bestp */
   unsigned bestSize = UINT_MAX;         /* The size of the best block found so far */
 
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
@@ -179,7 +179,7 @@ void * malloc(size_t nbytes){
   /* Worst fit */
 #if STRATEGY == 3
   Header *worstp = NULL,                /* Pointer to worst fitting block */
-         *worstprev;                    /* Pointer to the block before worstp */
+         *worstprev = NULL;             /* Pointer to the block before worstp */
   unsigned worstSize = 0;               /* The size of the worst block */
 
   for(p= prevp->s.ptr;  ; prevp = p, p = p->s.ptr) {
