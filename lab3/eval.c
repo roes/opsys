@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #include "tst.h"
 
-#define TIMES 100                       /* Number of times to run the test cases */
-
-#define MAX(a,b) ((a>b)?(a):(b))
+#define MINSIZE 1
+#define MAXSIZE 2048
 
 union header {
   struct {
@@ -16,82 +16,88 @@ union header {
 typedef union header Header;
 
 
+struct timeval time_passed(struct timeval start, struct timeval end){
+  struct timeval diff;
+  diff.tv_sec = end.tv_sec-start.tv_sec;
+  diff.tv_usec = end.tv_usec-start.tv_usec;
+  if(diff.tv_usec<0){ diff.tv_usec += 1000000; diff.tv_sec--; }
+  return diff;
+}
+
+
 /*
  *
  */
-void test(char* test_name,              /* Name of the test */
-          char mode,                    /* increase (+), decrease (-), random (?) or constant (=) */
+void test(char mode,                    /* increase (+), decrease (-), random (?) or constant (=) */
           int start_size,               /* Initial size to malloc */
           int num_vars){                /* Number of variables to malloc */
-  int i, j;
-  unsigned long max_memusage = 0;       /* Over TIMES runs, maximum memory requested */
-  char *a[num_vars];                    /* Pointers to the allocated memory */
+  int i, data_size = start_size;        /* Parameter to malloc request */
   void *lowmem, *highmem;               /* Pointers to lower and upper usage on the heap */
-
-  fprintf(stderr, "Running %s case evaluation.\n", test_name);
+  unsigned memusage = 0;                /* Total memory requested through malloc() */
+  char *a[num_vars];                    /* Pointers to the allocated memory */
+  struct timeval start, end, diff;      /* Start and end time of malloc loop */
 
 #ifdef MMAP                             /* Set lower heap pointer */
   lowmem = endHeap();
 #else
   lowmem = (void *) sbrk(0);
 #endif
+  gettimeofday(&start, NULL);
 
-  for(i = 0; i < TIMES; i++){
-    int data_size = start_size;         /* Parameter to malloc request */
-    unsigned long memusage = 0;         /* Total memory requested through malloc() */
-    /* Start timing */
-    for(j = 0; j < num_vars; j++){
-      switch(mode){
-        case '=':                       /* Constant malloc allocation */
-          break;
-        case '+':                       /* Amount allocated by malloc is increasing */
-          data_size += sizeof(Header);
-          break;
-        case '-':                       /* Amount allocated by malloc is decreasing */
-          data_size -= sizeof(Header);
-          break;
-        case '?':                       /* Amount allocated by malloc is random */
-          data_size = 1;                /* TODO: randomize */
-          break;
-      }
-      a[j] = malloc(data_size);
-      memusage += data_size;
+  for(i = 0; i < num_vars; i++){
+    switch(mode){
+      case '=':                         /* Constant malloc allocation */
+        break;
+      case '+':                         /* Amount allocated by malloc is increasing */
+        data_size += sizeof(Header);
+        break;
+      case '-':                         /* Amount allocated by malloc is decreasing */
+        data_size -= sizeof(Header);
+        break;
+      case '?':                         /* Amount allocated by malloc is random */
+        data_size = rand()%(MAXSIZE-MINSIZE) + MINSIZE;
+        break;
     }
-    /* Stop timing */
-    for(j = 0; j < num_vars; j++){
-      free(a[j]);
-    }
-    max_memusage = MAX(max_memusage, memusage);/* Only varies for random mode */
+
+    a[i] = malloc(data_size);
+    memusage += data_size;
   }
 
+  gettimeofday(&end, NULL);
 #ifdef MMAP                             /* Set upper heap pointer*/
   highmem = endHeap();
 #else
   highmem = (void *) sbrk(0);
 #endif
 
-  fprintf(stderr, "Memory usage: maximum usage - 0x%x\n", (unsigned) (highmem-lowmem));
-  fprintf(stderr, "Memory needed: 0x%x\n", (unsigned) max_memusage);
+  for(i = 0; i < num_vars; i++){
+    free(a[i]);
+  }
+
+  diff = time_passed(start, end);
+  fprintf(stderr, "Time consumed: %d:%.6d s\n", (int) diff.tv_sec, (int) diff.tv_usec);
+  fprintf(stderr, "Memory usage: 0x%x\n", (unsigned)(highmem-lowmem));
+  fprintf(stderr, "Memory needed: 0x%x\n", memusage);
 }
 
 void bestCase(){
-  test("predicted best", '=', sizeof(Header)*1023, 10000);
+  test('=', sizeof(Header)*1023, 10000);
 }
 
 void worstCase(){
-  test("predicted worst", '=', sizeof(Header)*512, 10000);
+  test('=', sizeof(Header)*512, 10000);
 }
 
 void randomSizes(){
-  test("randomized", '?', sizeof(Header)*1, 2000);
+  test('?', 0, 10000);
 }
 
 void incrementSizes(){
-  test("increment", '+', 0, 2000);
+  test('+', 0, 2000);
 }
 
 void decrementSizes(){
-  test("decrement", '-', sizeof(Header)*2001, 2000);
+  test('-', sizeof(Header)*2001, 2000);
 }
 
 int main(int argc, char *argv[]){
