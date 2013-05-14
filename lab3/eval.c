@@ -1,3 +1,12 @@
+/*
+ * Runs tests that evaluate malloc performance.
+ *
+ * It tests predicted best case (data fills up each memory block, leaving no list
+ * to traverse), predicted worst case (data fills half of each memory block, with
+ * the header this makes it so that the blocks won't fit more and a list of the
+ * same length as the number of data blocks is created), performance using random
+ * sized data and increasing/decreasing sized data.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -15,7 +24,6 @@ union header {
 };
 typedef union header Header;
 
-
 struct timeval time_passed(struct timeval start, struct timeval end){
   struct timeval diff;
   diff.tv_sec = end.tv_sec-start.tv_sec;
@@ -26,7 +34,7 @@ struct timeval time_passed(struct timeval start, struct timeval end){
 
 
 /*
- *
+ * Runs the evaluation tests.
  */
 void test(char mode,                    /* increase (+), decrease (-), random (?) or constant (=) */
           int start_size,               /* Initial size to malloc */
@@ -64,7 +72,7 @@ void test(char mode,                    /* increase (+), decrease (-), random (?
   }
 
   gettimeofday(&end, NULL);
-#ifdef MMAP                             /* Set upper heap pointer*/
+#ifdef MMAP                             /* Set upper heap pointer */
   highmem = endHeap();
 #else
   highmem = (void *) sbrk(0);
@@ -80,12 +88,12 @@ void test(char mode,                    /* increase (+), decrease (-), random (?
   fprintf(stderr, "Memory needed: 0x%x\n", memusage);
 }
 
-void bestCase(){
-  test('=', sizeof(Header)*1023, 10000);
+void bestCase(){                        /* With header perfect fit in a block */
+  test('=', sizeof(Header)*1023, 10000);/* which means there's never a list */
 }
 
-void worstCase(){
-  test('=', sizeof(Header)*512, 10000);
+void worstCase(){                       /* Takes up half a block without header */
+  test('=', sizeof(Header)*512, 10000); /* so next block won't fit -> long list */
 }
 
 void randomSizes(){
