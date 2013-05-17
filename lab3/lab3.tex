@@ -30,7 +30,7 @@ Utöver detta så ska prestandan evalueras. I testerna ska worst och best case s
 \section*{Programbeskrivning}
 Grunden för programmet är pekare till en circulär länkad lista med oanvända minnesblock, såkallade \texttt{Headers}. En \texttt{Header} är en union av en struct och en aligment variabel för att tvinga aligment av blocken. Structen består av en pekare till nästa \texttt{Header} i listan och en variabel för blockets storlek.
 \\
-Programet har fyra viktiga funktioner som modifierar den länkande listan på olika sätt: \texttt{malloc}, \texttt{free}, \texttt{morecore} och \texttt{realloc}. För att förstå varje enskild funktion krävs det att man förstår vad de andra tre också gör då de är tätt sammankopplade. 
+Programet har fyra viktiga funktioner som modifierar den länkande listan på olika sätt: \texttt{malloc}, \texttt{free}, \texttt{morecore} och \texttt{realloc}. För att förstå varje enskild funktion krävs det att man förstår vad de andra fyra också gör då de är tätt sammankopplade. 
 \\\\
 \texttt{free}: \texttt{free} är till för att lämna tillbaka ett block av minne så att det kan återanvändas. Funktionen tar en pekare till minnesblocket som ska återlämnas. \texttt{free} går igenom den länkade listan och hittar hålet där blocket passar in baserat på minnesaddressen. Blocket sätts in i listan genom att ändra på pekarna till block för blocket innan och det som sätts in. \texttt{free} slår också ihop minnesblock till ett om dom är alignade efter varandra i minnet. Detta beskrivs i mer detalj senare. \texttt{free} returnerar inget utan sätter istället pekaren till länkade listan till det frigjorda blocket.
 \\\\
