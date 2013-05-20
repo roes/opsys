@@ -117,6 +117,8 @@ Vi har dessutom test för ökande respektive minskande minnesstorlekar och ett t
 Evalueringen är körd på en Dell Vostro 3450 under Ubuntu 12.04 64-bit.
 Scriptet kördes 10 gånger och vad som visas i tabellerna är medelvärden av dessa körningar.
 
+Variansen för varje värde har kalkulerats och den översteg aldrig mer än 1\% av medelvärdet, vilket innebär att vi har minst tre signifikanta siffor.
+
 \begin{table}[h]
 \centering
 \caption{Tidsåtgång för de olika implementationerna}
@@ -157,6 +159,10 @@ Scriptet kördes 10 gånger och vad som visas i tabellerna är medelvärden av d
 \end{table}
 
 \subsection*{Slutsats}
+I bästa fallet fungerar alla tre taktikerna väldigt bra med ungefär dubbla exekveringstiden av referensiplementationen av \texttt{malloc}. Det är pågrund av att free-listan aldrig innehåller fler än ett block när allokeringar görs. Och då spelar det egentligen ingen roll vilken taktik som används. 
+I värsta fallet går tyvärr algoritmerna alldeles för långsamt. Exekveringstiden är ljusår ifrån referensen, vilket var ungefär vad vi förväntade oss. Ingen av taktikerna har något sätt att snabba upp en allokering av ett stort block när free-listan innehåller väldigt många små block. Att gå igenom hela listan tar väldigt lång tid. First-fit tar halva tiden jämfört med best och worst-fit därför att den går igenom free-listan en gång och tar sedan det blocket som skapas av \texttt[morecore} direkt. Medans best och worst-fit går igenom hela listan två gånger. 
+Det randomiserade testet är interesant. Här presterade first och best-fit bäst. De kom någorlunda nära referensen. Worst-fit tog åandrasidan väldigt lång tid på sig. Man kan resonera att den i längden genererar en längre free-lista genom att hela tiden förminska de största blocket. Att first-fit är snabbare än best-fit är inte så konstigt då den är mycket snabbare på att hitta ett block, vilket är den mest tidsödslande aktiviteten i implementationerna.
+
 Gör man multipla körningar i samma process (t.ex. genom att loopa anropet av ett testfall flera gånger) kommer minnet som man avallokerat genom anrop till \texttt{free} finnas tillgängligt i listan, så körningar efter den första går väldigt snabbt då inget mer minne behöver allokeras utan allt får plats. Detta beror på att minne som tilldelats processen genom \texttt{MMAP} först släps när processen terminerar.
 Detta gör det svårt att få något medelvärde på körningstid eller minnesanvändning, vilket i sin tur gör det svårt att uppskatta felmarginaler. Vi valde att köra vårat evalueringsscript 10 gånger för att få någon uppfattning om dessa, fler körningar hade givetvis varit att föredra men med våra förutsättningar inte praktiskt genomförbart.
 
@@ -185,7 +191,7 @@ Filer:
 \lstinputlisting[xleftmargin=-0.5in]{eval.c}
 
 \section*{Verksamhetsberättelse och synpunkter}
-Denna lab var betydligt tyngre än de föregående. Koden som man fick utgå från var väldigt bra. Utan den hade det varit mycket svårare. Det krävde dock att man spenderade en eftermiddag för att förstå den. Själva kodandet gick dock snabbt och enkelt när man väl satt sig in i koden. Mest tid spenderades på att skriva rapporten och testerna. \texttt{Best} och \texttt{Worst-fit} var lite för enkla att implementera. Det krävdes bara små förändringar på \texttt{First-fit} som redan fanns.
+Denna lab var betydligt tyngre än de föregående. Koden som man fick utgå från var väldigt bra. Utan den hade det varit mycket svårare. Det krävde dock att man spenderade en eftermiddag för att förstå den. Själva kodandet gick dock snabbt och enkelt när man väl satt sig in i koden. Mest tid spenderades på att skriva rapporten och testerna. \texttt{Best} och \texttt{Worst-fit} var lite för enkla att implementera. Det krävdes bara små förändringar på first-fit som redan fanns.
 \\
 De tillhandahållna testerna var bra och användbara för att snabbt testa om man lyckats med implementationerna. De var också en bra utgångspunkt för de tester man själv skulle skriva.
 \\
