@@ -114,9 +114,50 @@ I testet för bästa fallet anropar vi \texttt{malloc(1023*sizeof(Header))}, vil
 
 Vi har dessutom test för ökande respektive minskande minnesstorlekar och ett test med randomiserade minnesstorlekar för att bättre efterlikna verkligt användande.
 
+Evalueringen är körd på en Dell Vostro 3450 under Ubuntu 12.04 64-bit.
+Scriptet kördes 10 gånger och vad som visas i tabellerna är medelvärden av dessa körningar.
+
+\begin{table}[h]
+\centering
+\caption{Tidsåtgång för de olika implementationerna}
+\scalebox{1.0}{
+  \begin{tabular}{|l|c|c|c|c|c|}
+    \hline
+    & \multicolumn{5}{c|}{Testfall} \\
+    \hline
+    Implementation & Bästa & Värsta & Random & Ökande & Minskande \\
+    \hline
+    First fit & & & & & \\
+    Best fit & & & & & \\
+    Worst fit & & & & & \\
+    Referens & & & & & \\
+    \hline
+  \end{tabular}
+}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Minnesåtgång för de olika implementationerna}
+\scalebox{1.0}{
+  \begin{tabular}{|l|c|c|c|c|c|}
+    \hline
+    & \multicolumn{5}{c|}{Testfall} \\
+    \hline
+    Implementation & Bästa & Värsta & Random & Ökande & Minskande \\
+    \hline
+    First fit & & & & & \\
+    Best fit & & & & & \\
+    Worst fit & & & & & \\
+    Referens & & & & & \\
+    \hline
+  \end{tabular}
+}
+\end{table}
+
 \subsection*{Slutsats}
-Gör man multipla körningar i samma process (t.ex. genom att loopa anropet av ett testfall flera gånger) kommer minnet som man avallokerat genom anrop till \texttt{free} finnas tillgängligt i listan, så körningar efter den första går väldigt snabbt då inget mer minne behöver allokeras utan allt får plats.
-Detta gör det svårt att få något medelvärde på körningstid eller minnesanvändning, vilket i sin tur gör det svårt att uppskatta felmarginaler.
+Gör man multipla körningar i samma process (t.ex. genom att loopa anropet av ett testfall flera gånger) kommer minnet som man avallokerat genom anrop till \texttt{free} finnas tillgängligt i listan, så körningar efter den första går väldigt snabbt då inget mer minne behöver allokeras utan allt får plats. Detta beror på att minne som tilldelats processen genom \texttt{MMAP} först släps när processen terminerar.
+Detta gör det svårt att få något medelvärde på körningstid eller minnesanvändning, vilket i sin tur gör det svårt att uppskatta felmarginaler. Vi valde att köra vårat evalueringsscript 10 gånger för att få någon uppfattning om dessa, fler körningar hade givetvis varit att föredra men med våra förutsättningar inte praktiskt genomförbart.
 
 \section*{Filkatalog}
 Alla filer som är associerade med denna lab går att finna i:\\
