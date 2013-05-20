@@ -116,6 +116,7 @@ Vi har dessutom test för ökande respektive minskande minnesstorlekar och ett t
 
 Evalueringen är körd på en Dell Vostro 3450 under Ubuntu 12.04 64-bit.
 Scriptet kördes 10 gånger och vad som visas i tabellerna är medelvärden av dessa körningar.
+För varje körning kommer sekvensen av minnesstorlekar i slump-testfallet vara den samma, detta eftersom vi inte varierar seed:et för slumptalsgeneratorn, så att beräkna medelvärde för det testfallet har samma innebörd som för övriga testfall.
 
 \begin{table}[h]
 \centering
@@ -146,11 +147,30 @@ Scriptet kördes 10 gånger och vad som visas i tabellerna är medelvärden av d
     \hline
     Implementation & Bästa & Värsta & Random & Ökande & Minskande \\
     \hline
-    First fit & & & & & \\
-    Best fit & & & & & \\
-    Worst fit & & & & & \\
-    Referens malloc & & & & & \\
-    Efterfrågat & & & & & \\
+    First fit & 0x9c40000 & 0x9c40000 & 0xa20000 & 0x22dc000 & 0x208c000 \\
+    Best fit & 0x9c40000 & 0x9c40000 & 0xa04000 & 0x22dc000 & 0x208c000 \\
+    Worst fit & 0x9c40000 & 0x9c40000 & 0xa40000 & 0x22dc000 & 0x208c000 \\
+    Referens malloc & 0x9c61000 & 0x4e60000 & 0xa0e000 & 0x1eb1000 & 0x1ea8000 \\
+    Efterfrågat & 0x9c18f00 & 0x4e20000 & 0x9c7901 & 0x1e88680 & 0x1e88680 \\
+    \hline
+  \end{tabular}
+}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Minnesåtgång i procent av det som efterfrågats}
+\scalebox{1.0}{
+  \begin{tabular}{|l|c|c|c|c|c|}
+    \hline
+    & \multicolumn{5}{c|}{Testfall} \\
+    \hline
+    Implementation & Bästa & Värsta & Random & Ökande & Minskande \\
+    \hline
+    First fit & 100.10 & 200.00 & 103.53 & 114.17 & 106.60 \\
+    Best fit & 100.10 & 200.00 & 102.41 & 114.17 & 106.60 \\
+    Worst fit & 100.10 & 200.00 & 104.81 & 114.17 & 106.60 \\
+    Referens malloc & 100.18 & 100.32 & 102.81 & 100.52 & 100.40 \\
     \hline
   \end{tabular}
 }
