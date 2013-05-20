@@ -118,7 +118,7 @@ Evalueringen är körd på en Dell Vostro 3450 under Ubuntu 12.04 64-bit.
 Scriptet kördes 10 gånger och vad som visas i tabellerna är medelvärden av dessa körningar.
 För varje körning kommer sekvensen av minnesstorlekar i slump-testfallet vara den samma, detta eftersom vi inte varierar seed:et för slumptalsgeneratorn, så att beräkna medelvärde för det testfallet har samma innebörd som för övriga testfall.
 
-Variansen för varje värde har kalkulerats och den översteg aldrig mer än 1\% av medelvärdet, vilket innebär att vi har minst tre signifikanta siffor.
+Variansen för tidsvärdena har kalkulerats och den översteg aldrig 1\% av medelvärdet, vilket innebär att vi har minst tre signifikanta siffor.
 
 \begin{table}[h]
 \centering
@@ -181,7 +181,7 @@ Variansen för varje värde har kalkulerats och den översteg aldrig mer än 1\%
 \subsection*{Slutsats}
 I bästa fallet fungerar alla tre taktikerna väldigt bra med ungefär dubbla exekveringstiden av referensiplementationen av \texttt{malloc}. Det är pågrund av att free-listan aldrig innehåller fler än ett block när allokeringar görs. Och då spelar det egentligen ingen roll vilken taktik som används. 
 I värsta fallet går tyvärr algoritmerna alldeles för långsamt. Exekveringstiden är ljusår ifrån referensen, vilket var ungefär vad vi förväntade oss. Ingen av taktikerna har något sätt att snabba upp en allokering av ett stort block när free-listan innehåller väldigt många små block. Att gå igenom hela listan tar väldigt lång tid. First-fit tar halva tiden jämfört med best och worst-fit därför att den går igenom free-listan en gång och tar sedan det blocket som skapas av \texttt[morecore} direkt. Medans best och worst-fit går igenom hela listan två gånger. 
-Det randomiserade testet är interesant. Här presterade first och best-fit bäst. De kom någorlunda nära referensen. Worst-fit tog åandrasidan väldigt lång tid på sig. Man kan resonera att den i längden genererar en längre free-lista genom att hela tiden förminska de största blocket. Att first-fit är snabbare än best-fit är inte så konstigt då den är mycket snabbare på att hitta ett block, vilket är den mest tidsödslande aktiviteten i implementationerna.
+Det randomiserade testet är intressant. Här presterade first och best-fit bäst. De kom någorlunda nära referensen. Worst-fit tog åandrasidan väldigt lång tid på sig. Man kan resonera att den i längden genererar en längre free-lista genom att hela tiden förminska de största blocket. Att first-fit är snabbare än best-fit är inte så konstigt då den är mycket snabbare på att hitta ett block, vilket är den mest tidsödslande aktiviteten i implementationerna. En potentiellt bidragande orsak till att best-fit är såpass snabb kan vara att den avslutar då ett block av perfekt storlek hittats.
 
 Gör man multipla körningar i samma process (t.ex. genom att loopa anropet av ett testfall flera gånger) kommer minnet som man avallokerat genom anrop till \texttt{free} finnas tillgängligt i listan, så körningar efter den första går väldigt snabbt då inget mer minne behöver allokeras utan allt får plats. Detta beror på att minne som tilldelats processen genom \texttt{MMAP} först släps när processen terminerar.
 Detta gör det svårt att få något medelvärde på körningstid eller minnesanvändning, vilket i sin tur gör det svårt att uppskatta felmarginaler. Vi valde att köra vårat evalueringsscript 10 gånger för att få någon uppfattning om dessa, fler körningar hade givetvis varit att föredra men med våra förutsättningar inte praktiskt genomförbart.
