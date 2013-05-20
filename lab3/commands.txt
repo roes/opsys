@@ -1,0 +1,199 @@
+Script started on Mon 20 May 2013 01:28:02 PM CEST
+cecilia@Odin:~/Code/opsys/lab3$ make
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2   -c -o tstmerge.o tstmerge.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2   -c -o malloc.o malloc.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2 -o  t0 tstmerge.o malloc.o 
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2   -c -o tstalgorithms.o tstalgorithms.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2 -o  t1 tstalgorithms.o malloc.o 
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2   -c -o tstextreme.o tstextreme.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2 -o t2  tstextreme.o malloc.o 
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2   -c -o tstmalloc.o tstmalloc.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2 -o t3 tstmalloc.o  malloc.o 
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2   -c -o tstmemory.o tstmemory.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2 -o t4 tstmemory.o malloc.o 
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2   -c -o tstrealloc.o tstrealloc.c
+gcc -g -Wall -ansi -O4 -DSTRATEGY=2 -o t5 tstrealloc.o malloc.o 
+exec ./RUN_TESTS
+-- Testing your implementation of malloc --
+
+- If you have any problem in passing a test read the corresponding
+- source file to understand what the test is checking
+
+********************* TEST MERGE ... 
+-- Testing merging of deallocated large blocks ( >= 16384 bytes)
+Test passed OK
+********************* TEST ALGORITHMS ... 
+./t1, line 69: -- This test checks malloc(), free() and realloc()
+./t1: Max memory allocated 11895640
+./t1: Memory consumed 12599296
+********************* TEST EXTREME USAGE ... 
+./t2, line 23: -- This test will search for memory leaks
+./t2, line 24: At most 3.0x pages are allocated and recycled
+./t2: Used memory in test: 0x4000 (= 4.00 * pagesize)
+********************* TEST MALLOC ... 
+./t3, line 19: -- Test malloc() for unusual situations
+./t3, line 21: Allocate small block of 17 bytes 
+./t3, line 25: Write on allocated block
+./t3, line 28: Allocate big block of 4711 bytes
+./t3, line 32: Write on allocated block
+./t3, line 34: Free big block
+./t3, line 37: Free small block
+./t3, line 40: Free NULL
+./t3, line 43: Allocate zero
+./t3, line 47: Free pointer from malloc(0)
+./t3, line 50: Test alignment for double
+********************* TEST MEMORY ... 
+./t4, line 32: Testing memory utility
+./t4, line 40: Getting small pieces of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using total of 0x4000 of memory
+./t4: Using 2.00 times worst case calculation
+./t4, line 66: Small memory handled OK
+./t4, line 69: Getting big blocks of memory
+./t4: Using total of 0x450000 of memory
+./t4: Using total of 0x450000 of memory
+./t4: Using total of 0x450000 of memory
+./t4: Using total of 0x450000 of memory
+./t4: Using total of 0x450000 of memory
+./t4: Using total of 0x450000 of memory
+./t4: Using total of 0x450000 of memory
+./t4: Using total of 0x450000 of memory
+./t4: Using total of 0x450000 of memory
+./t4: Using total of 0x450000 of memory
+./t4, line 88: Allocations versus worst case memory usage:
+./t4: Using 1.10 times worst case calculation
+./t4, line 96: Big memory handled OK
+********************* TEST REALLOC ... 
+./t5, line 17: -- Test realloc() for unusual situations
+./t5, line 19: Allocate 17 bytes with realloc(NULL, 17)
+./t5, line 24: Write on allocated block
+./t5, line 26: Increase block size with realloc(., 4711)
+./t5, line 33: Write on allocated block
+./t5, line 35: Decrease block size with realloc(., 17)
+./t5, line 40: Decreased block size
+./t5, line 43: Free block with realloc(., 0)
+./t5, line 48: realloc(p, 0) returns null pointer
+./t5, line 49: Free pointer allocated with realloc(NULL, 0)
+********************* TEST CRASH  SIMPLE ... 
+./RUN_TESTS: line 27: ./t6: No such file or directory
+********************* TEST CRASH COMPLEX ...  
+./RUN_TESTS: line 30: ./t7: No such file or directory
+make: *** [all] Error 127
+cecilia@Odin:~/Code/opsys/lab3$ make clean
+\rm -f t0 t1 t2 t3 t4 t5 malloc.o tstalgorithms.o  tstcrash_simple.o tstextreme.o tstmalloc.o  tstmemory.o tstrealloc.o tstmerge.o core
+cecilia@Odin:~/Code/opsys/lab3$ ./RUN_EVAL
++ gcc -g -Wall -ansi -O4 -c -o eval.o eval.c
++ gcc -g -Wall -ansi -O4 -c -o eval_s.o eval_system_malloc.c
++ gcc -g -Wall -ansi -O4 -DSTRATEGY=1 -c -o malloc1.o malloc.c
++ gcc -g -Wall -ansi -O4 -DSTRATEGY=2 -c -o malloc2.o malloc.c
++ gcc -g -Wall -ansi -O4 -DSTRATEGY=3 -c -o malloc3.o malloc.c
++ gcc -g -Wall -ansi -O4 -o eval1 eval.o malloc1.o
++ gcc -g -Wall -ansi -O4 -o eval2 eval.o malloc2.o
++ gcc -g -Wall -ansi -O4 -o eval3 eval.o malloc3.o
++ gcc -g -Wall -ansi -O4 -o eval_s eval_s.o
++ set +x
+-- Evaluating performance of malloc --
+
+********** EVALUATING FIRST FIT... 
+./eval1, line 127: Starting evaluation of best case performance
+Time consumed: 0:047418 s
+Memory usage: 0x9c40000
+Memory needed: 0x9c18f00
+./eval1, line 123: Starting evaluation of worst case performance
+Time consumed: 4:497869 s
+Memory usage: 0x9c40000
+Memory needed: 0x4e20000
+./eval1, line 131: Starting evaluation of malloc performance given random data
+Time consumed: 0:017176 s
+Memory usage: 0xa20000
+Memory needed: 0x9c7901
+./eval1, line 135: Starting evaluation of malloc performance given increasing malloc sizes
+Time consumed: 0:108224 s
+Memory usage: 0x22dc000
+Memory needed: 0x1e88680
+./eval1, line 139: Starting evaluation of malloc performance given decreasing malloc sizes
+Time consumed: 0:107903 s
+Memory usage: 0x208c000
+Memory needed: 0x1e88680
+********** DONE ********** 
+
+********** EVALUATING BEST FIT... 
+./eval2, line 127: Starting evaluation of best case performance
+Time consumed: 0:043638 s
+Memory usage: 0x9c40000
+Memory needed: 0x9c18f00
+./eval2, line 123: Starting evaluation of worst case performance
+Time consumed: 8:844961 s
+Memory usage: 0x9c40000
+Memory needed: 0x4e20000
+./eval2, line 131: Starting evaluation of malloc performance given random data
+Time consumed: 0:036409 s
+Memory usage: 0xa04000
+Memory needed: 0x9c7901
+./eval2, line 135: Starting evaluation of malloc performance given increasing malloc sizes
+Time consumed: 0:199088 s
+Memory usage: 0x22dc000
+Memory needed: 0x1e88680
+./eval2, line 139: Starting evaluation of malloc performance given decreasing malloc sizes
+Time consumed: 0:188040 s
+Memory usage: 0x208c000
+Memory needed: 0x1e88680
+********** DONE ********** 
+
+********** EVALUATING WORST FIT... 
+./eval3, line 127: Starting evaluation of best case performance
+Time consumed: 0:046802 s
+Memory usage: 0x9c40000
+Memory needed: 0x9c18f00
+./eval3, line 123: Starting evaluation of worst case performance
+Time consumed: 8:847795 s
+Memory usage: 0x9c40000
+Memory needed: 0x4e20000
+./eval3, line 131: Starting evaluation of malloc performance given random data
+Time consumed: 0:121116 s
+Memory usage: 0xa40000
+Memory needed: 0x9c7901
+./eval3, line 135: Starting evaluation of malloc performance given increasing malloc sizes
+Time consumed: 0:200162 s
+Memory usage: 0x22dc000
+Memory needed: 0x1e88680
+./eval3, line 139: Starting evaluation of malloc performance given decreasing malloc sizes
+Time consumed: 0:225013 s
+Memory usage: 0x208c000
+Memory needed: 0x1e88680
+********** DONE ********** 
+
+********** EVALUATING SYSTEM MALLOC FOR REFERENCE... 
+./eval_s, line 110: Starting evaluation of best case performance
+Time consumed: 0:018271 s
+Memory usage: 0x9c61000
+Memory needed: 0x9c18f00
+./eval_s, line 106: Starting evaluation of worst case performance
+Time consumed: 0:025291 s
+Memory usage: 0x4e60000
+Memory needed: 0x4e20000
+./eval_s, line 114: Starting evaluation of malloc performance given random data
+Time consumed: 0:007578 s
+Memory usage: 0xa0e000
+Memory needed: 0x9c7901
+./eval_s, line 118: Starting evaluation of malloc performance given increasing malloc sizes
+Time consumed: 0:005055 s
+Memory usage: 0x1eb1000
+Memory needed: 0x1e88680
+./eval_s, line 122: Starting evaluation of malloc performance given decreasing malloc sizes
+Time consumed: 0:006083 s
+Memory usage: 0x1ea8000
+Memory needed: 0x1e88680
+********** DONE ********** 
+cecilia@Odin:~/Code/opsys/lab3$ exit
+exit
+
+Script done on Mon 20 May 2013 01:29:45 PM CEST
